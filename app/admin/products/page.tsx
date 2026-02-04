@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from "react";
 import {
   useGetProductsQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
   type Product,
-} from '@/features/api/productsApi';
-import { useGetCategoriesQuery } from '@/features/api/categoriesApi';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
+} from "@/features/api/productsApi";
+import { useGetCategoriesQuery } from "@/features/api/categoriesApi";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Plus,
   Pencil,
@@ -23,10 +23,17 @@ import {
   Package,
   Search,
   Upload,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import Image from 'next/image';
-import { TITLES, LABELS, BUTTONS, MESSAGES, PLACEHOLDERS, CURRENCY } from '@/constants';
+} from "lucide-react";
+import { toast } from "sonner";
+import Image from "next/image";
+import {
+  TITLES,
+  LABELS,
+  BUTTONS,
+  MESSAGES,
+  PLACEHOLDERS,
+  CURRENCY,
+} from "@/constants";
 
 interface VariantForm {
   size: string;
@@ -36,8 +43,23 @@ interface VariantForm {
 }
 
 export default function ProductsPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { data: productsResponse, isLoading, error } = useGetProductsQuery({ search: searchQuery });
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 500); // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  const {
+    data: productsResponse,
+    isLoading,
+    error,
+  } = useGetProductsQuery({ search: searchQuery });
   const { data: categories = [] } = useGetCategoriesQuery();
   const [createProduct] = useCreateProductMutation();
   const [updateProduct] = useUpdateProductMutation();
@@ -47,31 +69,41 @@ export default function ProductsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const formRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    slug: '',
-    description: '',
+    name: "",
+    slug: "",
+    description: "",
     categoryIds: [] as string[],
     isActive: true,
     isFeatured: false,
-    tags: '',
-    seoTitle: '',
-    seoDescription: '',
-    seoKeywords: '',
+    tags: "",
+    seoTitle: "",
+    seoDescription: "",
+    seoKeywords: "",
   });
   const [variants, setVariants] = useState<VariantForm[]>([
-    { size: '50ml', price: '', comparePrice: '', stock: '' }
+    { size: "50ml", price: "", comparePrice: "", stock: "" },
   ]);
 
   const products = productsResponse?.products || [];
+
+  // Scroll to form when editing or creating
+  useEffect(() => {
+    if ((isCreating || editingId) && formRef.current) {
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+  }, [isCreating, editingId]);
 
   const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
     // Validate file types and sizes
-    const validFiles = files.filter(file => {
-      if (!file.type.startsWith('image/')) {
+    const validFiles = files.filter((file) => {
+      if (!file.type.startsWith("image/")) {
         toast.error(MESSAGES.ERROR.NOT_VALID_IMAGE(file.name));
         return false;
       }
@@ -84,48 +116,59 @@ export default function ProductsPage() {
 
     if (validFiles.length === 0) return;
 
-    setImageFiles(prev => [...prev, ...validFiles]);
+    setImageFiles((prev) => [...prev, ...validFiles]);
 
     // Create previews
-    validFiles.forEach(file => {
+    validFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result as string]);
+        setImagePreviews((prev) => [...prev, reader.result as string]);
       };
       reader.readAsDataURL(file);
     });
   };
 
   const removeImage = (index: number) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const addVariant = () => {
-    setVariants([...variants, { size: '', price: '', comparePrice: '', stock: '' }]);
+    setVariants([
+      ...variants,
+      { size: "", price: "", comparePrice: "", stock: "" },
+    ]);
   };
 
   const removeVariant = (index: number) => {
     setVariants(variants.filter((_, i) => i !== index));
   };
 
-  const updateVariant = (index: number, field: keyof VariantForm, value: string) => {
+  const updateVariant = (
+    index: number,
+    field: keyof VariantForm,
+    value: string,
+  ) => {
     const newVariants = [...variants];
     newVariants[index][field] = value;
     setVariants(newVariants);
   };
 
   const toggleCategory = (categoryId: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       categoryIds: prev.categoryIds.includes(categoryId)
-        ? prev.categoryIds.filter(id => id !== categoryId)
-        : [...prev.categoryIds, categoryId]
+        ? prev.categoryIds.filter((id) => id !== categoryId)
+        : [...prev.categoryIds, categoryId],
     }));
   };
 
   const handleCreate = async () => {
-    if (!formData.name.trim() || !formData.description.trim() || formData.categoryIds.length === 0) {
+    if (
+      !formData.name.trim() ||
+      !formData.description.trim() ||
+      formData.categoryIds.length === 0
+    ) {
       toast.error(MESSAGES.ERROR.PRODUCT_FIELDS_REQUIRED);
       return;
     }
@@ -135,24 +178,34 @@ export default function ProductsPage() {
       return;
     }
 
-    console.log('Raw variants before processing:', variants);
+    console.log("Raw variants before processing:", variants);
 
     try {
       const form = new FormData();
-      form.append('name', formData.name);
-      form.append('slug', formData.slug || formData.name.toLowerCase().replace(/\s+/g, '-'));
-      form.append('description', formData.description);
-      form.append('categories', JSON.stringify(formData.categoryIds));
-      form.append('isActive', String(formData.isActive));
-      form.append('isFeatured', String(formData.isFeatured));
-      
+      form.append("name", formData.name);
+      form.append(
+        "slug",
+        formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-"),
+      );
+      form.append("description", formData.description);
+      form.append("categories", JSON.stringify(formData.categoryIds));
+      form.append("isActive", String(formData.isActive));
+      form.append("isFeatured", String(formData.isFeatured));
+
       // Add variants
       const variantsData = variants
-        .filter(v => {
-          console.log('Checking variant:', v, 'size:', v.size, 'price:', v.price);
+        .filter((v) => {
+          console.log(
+            "Checking variant:",
+            v,
+            "size:",
+            v.size,
+            "price:",
+            v.price,
+          );
           return v.size && v.price;
         })
-        .map(v => {
+        .map((v) => {
           const variant: any = {
             size: v.size,
             price: parseFloat(v.price) || 0,
@@ -161,40 +214,50 @@ export default function ProductsPage() {
           if (v.comparePrice && parseFloat(v.comparePrice) > 0) {
             variant.comparePrice = parseFloat(v.comparePrice);
           }
-          console.log('Mapped variant:', variant);
+          console.log("Mapped variant:", variant);
           return variant;
         });
-      
-      console.log('Final variants data to send:', variantsData);
-      console.log('JSON stringified variants:', JSON.stringify(variantsData));
-      form.append('variants', JSON.stringify(variantsData));
-      
+
+      console.log("Final variants data to send:", variantsData);
+      console.log("JSON stringified variants:", JSON.stringify(variantsData));
+      form.append("variants", JSON.stringify(variantsData));
+
       // Debug: Log all form data
-      console.log('FormData entries:');
+      console.log("FormData entries:");
       for (let pair of form.entries()) {
-        console.log(pair[0], typeof pair[1] === 'string' ? pair[1] : 'File');
+        console.log(pair[0], typeof pair[1] === "string" ? pair[1] : "File");
       }
 
       // Add tags
       if (formData.tags) {
-        const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
-        form.append('tags', JSON.stringify(tagsArray));
+        const tagsArray = formData.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
+        form.append("tags", JSON.stringify(tagsArray));
       }
 
       // Add SEO
-      if (formData.seoTitle || formData.seoDescription || formData.seoKeywords) {
+      if (
+        formData.seoTitle ||
+        formData.seoDescription ||
+        formData.seoKeywords
+      ) {
         const seo: any = {};
         if (formData.seoTitle) seo.title = formData.seoTitle;
         if (formData.seoDescription) seo.description = formData.seoDescription;
         if (formData.seoKeywords) {
-          seo.keywords = formData.seoKeywords.split(',').map(k => k.trim()).filter(Boolean);
+          seo.keywords = formData.seoKeywords
+            .split(",")
+            .map((k) => k.trim())
+            .filter(Boolean);
         }
-        form.append('seo', JSON.stringify(seo));
+        form.append("seo", JSON.stringify(seo));
       }
 
       // Add images
-      imageFiles.forEach(file => {
-        form.append('images', file);
+      imageFiles.forEach((file) => {
+        form.append("images", file);
       });
 
       await createProduct(form).unwrap();
@@ -202,7 +265,7 @@ export default function ProductsPage() {
       setIsCreating(false);
       resetForm();
     } catch (error: any) {
-      console.error('Create product error:', error);
+      console.error("Create product error:", error);
       toast.error(error?.data?.message || MESSAGES.ERROR.PRODUCT_CREATE_FAILED);
     }
   };
@@ -215,17 +278,17 @@ export default function ProductsPage() {
 
     try {
       const form = new FormData();
-      form.append('name', formData.name);
-      form.append('slug', formData.slug);
-      form.append('description', formData.description);
-      form.append('categories', JSON.stringify(formData.categoryIds));
-      form.append('isActive', String(formData.isActive));
-      form.append('isFeatured', String(formData.isFeatured));
+      form.append("name", formData.name);
+      form.append("slug", formData.slug);
+      form.append("description", formData.description);
+      form.append("categories", JSON.stringify(formData.categoryIds));
+      form.append("isActive", String(formData.isActive));
+      form.append("isFeatured", String(formData.isFeatured));
 
       // Add variants
       const variantsData = variants
-        .filter(v => v.size && v.price)
-        .map(v => {
+        .filter((v) => v.size && v.price)
+        .map((v) => {
           const variant: any = {
             size: v.size,
             price: parseFloat(v.price) || 0,
@@ -236,28 +299,38 @@ export default function ProductsPage() {
           }
           return variant;
         });
-      form.append('variants', JSON.stringify(variantsData));
+      form.append("variants", JSON.stringify(variantsData));
 
       // Add tags
       if (formData.tags) {
-        const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
-        form.append('tags', JSON.stringify(tagsArray));
+        const tagsArray = formData.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
+        form.append("tags", JSON.stringify(tagsArray));
       }
 
       // Add SEO
-      if (formData.seoTitle || formData.seoDescription || formData.seoKeywords) {
+      if (
+        formData.seoTitle ||
+        formData.seoDescription ||
+        formData.seoKeywords
+      ) {
         const seo: any = {};
         if (formData.seoTitle) seo.title = formData.seoTitle;
         if (formData.seoDescription) seo.description = formData.seoDescription;
         if (formData.seoKeywords) {
-          seo.keywords = formData.seoKeywords.split(',').map(k => k.trim()).filter(Boolean);
+          seo.keywords = formData.seoKeywords
+            .split(",")
+            .map((k) => k.trim())
+            .filter(Boolean);
         }
-        form.append('seo', JSON.stringify(seo));
+        form.append("seo", JSON.stringify(seo));
       }
 
       // Add new images
-      imageFiles.forEach(file => {
-        form.append('images', file);
+      imageFiles.forEach((file) => {
+        form.append("images", file);
       });
 
       await updateProduct({ id, formData: form }).unwrap();
@@ -265,13 +338,18 @@ export default function ProductsPage() {
       setEditingId(null);
       resetForm();
     } catch (error: any) {
-      console.error('Update product error:', error);
+      console.error("Update product error:", error);
       toast.error(error?.data?.message || MESSAGES.ERROR.PRODUCT_UPDATE_FAILED);
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`${MESSAGES.CONFIRM.DELETE_PRODUCT} "${name}"${MESSAGES.CONFIRM.DELETE_CONFIRMATION}`)) return;
+    if (
+      !confirm(
+        `${MESSAGES.CONFIRM.DELETE_PRODUCT} "${name}"${MESSAGES.CONFIRM.DELETE_CONFIRMATION}`,
+      )
+    )
+      return;
 
     try {
       await deleteProduct(id).unwrap();
@@ -282,36 +360,56 @@ export default function ProductsPage() {
   };
 
   const startEdit = (product: Product) => {
-    setEditingId(product._id);
-    const categoryIds = Array.isArray(product.category) 
-      ? product.category.map(c => typeof c === 'string' ? c : c._id)
-      : [typeof product.category === 'string' ? product.category : product.category._id];
+    console.log("Starting edit for product:", product);
 
-    setFormData({
+    setEditingId(product._id);
+    const categoryIds = Array.isArray(product.category)
+      ? product.category.map((c) => (typeof c === "string" ? c : c._id))
+      : [
+          typeof product.category === "string"
+            ? product.category
+            : product.category._id,
+        ];
+
+    const newFormData = {
       name: product.name,
       slug: product.slug,
       description: product.description,
       categoryIds,
-      isActive: true,
+      isActive: product.isActive ?? true,
       isFeatured: product.isFeatured,
-      tags: '',
-      seoTitle: '',
-      seoDescription: '',
-      seoKeywords: '',
-    });
+      tags: product.tags ? product.tags.join(", ") : "",
+      seoTitle: product.seo?.title || "",
+      seoDescription: product.seo?.description || "",
+      seoKeywords: product.seo?.keywords ? product.seo.keywords.join(", ") : "",
+    };
+
+    console.log("Setting form data:", newFormData);
+    setFormData(newFormData);
 
     // Set variants
     if (product.variants && product.variants.length > 0) {
-      setVariants(product.variants.map(v => ({
+      const newVariants = product.variants.map((v) => ({
         size: v.size,
         price: v.price.toString(),
-        comparePrice: v.comparePrice?.toString() || '',
+        comparePrice: v.comparePrice?.toString() || "",
         stock: v.stock.toString(),
-      })));
+      }));
+      console.log("Setting variants:", newVariants);
+      setVariants(newVariants);
+    } else {
+      setVariants([{ size: "50ml", price: "", comparePrice: "", stock: "" }]);
+    }
+
+    // Set existing images as previews
+    if (product.images && product.images.length > 0) {
+      console.log("Setting image previews:", product.images);
+      setImagePreviews(product.images);
+    } else {
+      setImagePreviews([]);
     }
 
     setIsCreating(false);
-    setImagePreviews([]);
     setImageFiles([]);
   };
 
@@ -323,18 +421,18 @@ export default function ProductsPage() {
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      slug: '',
-      description: '',
+      name: "",
+      slug: "",
+      description: "",
       categoryIds: [],
       isActive: true,
       isFeatured: false,
-      tags: '',
-      seoTitle: '',
-      seoDescription: '',
-      seoKeywords: '',
+      tags: "",
+      seoTitle: "",
+      seoDescription: "",
+      seoKeywords: "",
     });
-    setVariants([{ size: '50ml', price: '', comparePrice: '', stock: '' }]);
+    setVariants([{ size: "50ml", price: "", comparePrice: "", stock: "" }]);
     setImagePreviews([]);
     setImageFiles([]);
   };
@@ -364,7 +462,9 @@ export default function ProductsPage() {
         <h1 className="text-3xl font-bold">{TITLES.ADMIN.PRODUCTS}</h1>
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-8 text-center">
-            <p className="text-red-600">{MESSAGES.ERROR.PRODUCTS_LOAD_FAILED}</p>
+            <p className="text-red-600">
+              {MESSAGES.ERROR.PRODUCTS_LOAD_FAILED}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -394,8 +494,8 @@ export default function ProductsPage() {
               <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={PLACEHOLDERS.SEARCH.PRODUCTS}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="pr-10"
               />
             </div>
@@ -405,21 +505,27 @@ export default function ProductsPage() {
 
       {/* Create/Edit Form */}
       {(isCreating || editingId) && (
-        <Card>
+        <Card ref={formRef}>
           <CardHeader>
-            <CardTitle>{isCreating ? BUTTONS.ADD_PRODUCT : LABELS.SECTIONS.PRODUCT_EDIT}</CardTitle>
+            <CardTitle>
+              {isCreating ? BUTTONS.ADD_PRODUCT : LABELS.SECTIONS.PRODUCT_EDIT}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Basic Info */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">{LABELS.SECTIONS.BASIC_INFO}</h3>
+              <h3 className="font-semibold text-lg">
+                {LABELS.SECTIONS.BASIC_INFO}
+              </h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">{LABELS.PRODUCT.NAME}</Label>
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     placeholder={PLACEHOLDERS.PRODUCT.NAME}
                   />
                 </div>
@@ -428,7 +534,9 @@ export default function ProductsPage() {
                   <Input
                     id="slug"
                     value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, slug: e.target.value })
+                    }
                     placeholder={PLACEHOLDERS.PRODUCT.SLUG}
                     dir="ltr"
                   />
@@ -436,11 +544,15 @@ export default function ProductsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">{LABELS.PRODUCT.DESCRIPTION}</Label>
+                <Label htmlFor="description">
+                  {LABELS.PRODUCT.DESCRIPTION}
+                </Label>
                 <textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   placeholder={PLACEHOLDERS.PRODUCT.DESCRIPTION}
                   className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
@@ -449,7 +561,9 @@ export default function ProductsPage() {
 
             {/* Categories */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">{LABELS.PRODUCT.CATEGORIES_SECTION}</h3>
+              <h3 className="font-semibold text-lg">
+                {LABELS.PRODUCT.CATEGORIES_SECTION}
+              </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {categories.map((cat) => (
                   <div key={cat._id} className="flex items-center gap-2">
@@ -458,7 +572,10 @@ export default function ProductsPage() {
                       checked={formData.categoryIds.includes(cat._id)}
                       onCheckedChange={() => toggleCategory(cat._id)}
                     />
-                    <Label htmlFor={`cat-${cat._id}`} className="cursor-pointer text-sm">
+                    <Label
+                      htmlFor={`cat-${cat._id}`}
+                      className="cursor-pointer text-sm"
+                    >
                       {cat.name}
                     </Label>
                   </div>
@@ -469,8 +586,15 @@ export default function ProductsPage() {
             {/* Variants */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-lg">{LABELS.PRODUCT.VARIANTS_SECTION}</h3>
-                <Button type="button" size="sm" variant="outline" onClick={addVariant}>
+                <h3 className="font-semibold text-lg">
+                  {LABELS.PRODUCT.VARIANTS_SECTION}
+                </h3>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={addVariant}
+                >
                   <Plus className="h-4 w-4 ml-1" />
                   {BUTTONS.ADD_VARIANT}
                 </Button>
@@ -482,7 +606,9 @@ export default function ProductsPage() {
                       <Label>{LABELS.PRODUCT.VARIANT_SIZE}</Label>
                       <Input
                         value={variant.size}
-                        onChange={(e) => updateVariant(index, 'size', e.target.value)}
+                        onChange={(e) =>
+                          updateVariant(index, "size", e.target.value)
+                        }
                         placeholder={PLACEHOLDERS.PRODUCT.VARIANT_SIZE}
                       />
                     </div>
@@ -491,7 +617,9 @@ export default function ProductsPage() {
                       <Input
                         type="number"
                         value={variant.price}
-                        onChange={(e) => updateVariant(index, 'price', e.target.value)}
+                        onChange={(e) =>
+                          updateVariant(index, "price", e.target.value)
+                        }
                         placeholder={PLACEHOLDERS.PRODUCT.VARIANT_PRICE}
                         min="0"
                         step="0.01"
@@ -502,7 +630,9 @@ export default function ProductsPage() {
                       <Input
                         type="number"
                         value={variant.comparePrice}
-                        onChange={(e) => updateVariant(index, 'comparePrice', e.target.value)}
+                        onChange={(e) =>
+                          updateVariant(index, "comparePrice", e.target.value)
+                        }
                         placeholder={PLACEHOLDERS.PRODUCT.VARIANT_COMPARE_PRICE}
                         min="0"
                         step="0.01"
@@ -513,7 +643,9 @@ export default function ProductsPage() {
                       <Input
                         type="number"
                         value={variant.stock}
-                        onChange={(e) => updateVariant(index, 'stock', e.target.value)}
+                        onChange={(e) =>
+                          updateVariant(index, "stock", e.target.value)
+                        }
                         placeholder={PLACEHOLDERS.PRODUCT.VARIANT_STOCK}
                         min="0"
                       />
@@ -537,7 +669,9 @@ export default function ProductsPage() {
 
             {/* Images */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">{LABELS.PRODUCT.IMAGES_SECTION}</h3>
+              <h3 className="font-semibold text-lg">
+                {LABELS.PRODUCT.IMAGES_SECTION}
+              </h3>
               <div className="space-y-2">
                 <Label htmlFor="images">{LABELS.PRODUCT.UPLOAD_IMAGES}</Label>
                 <Input
@@ -559,7 +693,7 @@ export default function ProductsPage() {
                       <div className="relative w-full h-24 border rounded-lg overflow-hidden">
                         <Image
                           src={preview}
-                          alt={`معاينة ${index + 1}`}
+                          alt={`${LABELS.PRODUCT.PREVIEW} ${index + 1}`}
                           fill
                           className="object-cover"
                         />
@@ -585,40 +719,59 @@ export default function ProductsPage() {
               <Input
                 id="tags"
                 value={formData.tags}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, tags: e.target.value })
+                }
                 placeholder={PLACEHOLDERS.PRODUCT.TAGS}
               />
-              <p className="text-xs text-muted-foreground">{MESSAGES.INFO.TAGS_SEPARATOR}</p>
+              <p className="text-xs text-muted-foreground">
+                {MESSAGES.INFO.TAGS_SEPARATOR}
+              </p>
             </div>
 
             {/* SEO */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">{LABELS.PRODUCT.SEO_SECTION}</h3>
+              <h3 className="font-semibold text-lg">
+                {LABELS.PRODUCT.SEO_SECTION}
+              </h3>
               <div className="space-y-3">
                 <div className="space-y-2">
                   <Label htmlFor="seoTitle">{LABELS.PRODUCT.SEO_TITLE}</Label>
                   <Input
                     id="seoTitle"
                     value={formData.seoTitle}
-                    onChange={(e) => setFormData({ ...formData, seoTitle: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, seoTitle: e.target.value })
+                    }
                     placeholder={PLACEHOLDERS.PRODUCT.SEO_TITLE}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="seoDescription">{LABELS.PRODUCT.SEO_DESCRIPTION}</Label>
+                  <Label htmlFor="seoDescription">
+                    {LABELS.PRODUCT.SEO_DESCRIPTION}
+                  </Label>
                   <Input
                     id="seoDescription"
                     value={formData.seoDescription}
-                    onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        seoDescription: e.target.value,
+                      })
+                    }
                     placeholder={PLACEHOLDERS.PRODUCT.SEO_DESCRIPTION}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="seoKeywords">{LABELS.PRODUCT.SEO_KEYWORDS}</Label>
+                  <Label htmlFor="seoKeywords">
+                    {LABELS.PRODUCT.SEO_KEYWORDS}
+                  </Label>
                   <Input
                     id="seoKeywords"
                     value={formData.seoKeywords}
-                    onChange={(e) => setFormData({ ...formData, seoKeywords: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, seoKeywords: e.target.value })
+                    }
                     placeholder={PLACEHOLDERS.PRODUCT.SEO_KEYWORDS}
                   />
                 </div>
@@ -627,13 +780,17 @@ export default function ProductsPage() {
 
             {/* Settings */}
             <div className="space-y-3">
-              <h3 className="font-semibold text-lg">{LABELS.SECTIONS.SETTINGS}</h3>
+              <h3 className="font-semibold text-lg">
+                {LABELS.SECTIONS.SETTINGS}
+              </h3>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="isActive"
                     checked={formData.isActive}
-                    onCheckedChange={(checked) => setFormData({ ...formData, isActive: !!checked })}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, isActive: !!checked })
+                    }
                   />
                   <Label htmlFor="isActive" className="cursor-pointer">
                     {LABELS.PRODUCT.IS_ACTIVE}
@@ -643,7 +800,9 @@ export default function ProductsPage() {
                   <Checkbox
                     id="isFeatured"
                     checked={formData.isFeatured}
-                    onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: !!checked })}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, isFeatured: !!checked })
+                    }
                   />
                   <Label htmlFor="isFeatured" className="cursor-pointer">
                     {LABELS.PRODUCT.IS_FEATURED}
@@ -653,7 +812,11 @@ export default function ProductsPage() {
             </div>
 
             <div className="flex gap-2">
-              <Button onClick={isCreating ? handleCreate : () => handleUpdate(editingId!)}>
+              <Button
+                onClick={
+                  isCreating ? handleCreate : () => handleUpdate(editingId!)
+                }
+              >
                 <Save className="ml-2 h-4 w-4" />
                 {BUTTONS.SAVE}
               </Button>
@@ -672,7 +835,9 @@ export default function ProductsPage() {
           <div className="divide-y">
             {products.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
-                {searchQuery ? MESSAGES.EMPTY.NO_SEARCH_RESULTS : MESSAGES.EMPTY.NO_PRODUCTS}
+                {searchQuery
+                  ? MESSAGES.EMPTY.NO_SEARCH_RESULTS
+                  : MESSAGES.EMPTY.NO_PRODUCTS}
               </div>
             ) : (
               products.map((product) => (
@@ -698,23 +863,29 @@ export default function ProductsPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-4">
                         <div className="space-y-1">
-                          <h3 className="font-semibold text-lg">{product.name}</h3>
+                          <h3 className="font-semibold text-lg">
+                            {product.name}
+                          </h3>
                           <p className="text-sm text-muted-foreground line-clamp-2">
                             {product.description}
                           </p>
                           <div className="flex flex-wrap gap-3 text-sm">
                             <span className="text-primary font-semibold">
-                              {product.price?.toLocaleString('ar-SA') || '0'} ر.س
+                              {product.price?.toLocaleString("ar-SA") || "0"}{" "}
+                              {CURRENCY.DEFAULT}
                             </span>
                             <span className="text-muted-foreground">
-                              المخزون: {product.stock || 0}
+                              {LABELS.PRODUCT.STOCK_LABEL}: {product.stock || 0}
                             </span>
                             <span className="text-muted-foreground">
-                              الفئة: {typeof product.category === 'object' ? product.category.name : 'غير محدد'}
+                              {LABELS.PRODUCT.CATEGORY_LABEL}:{" "}
+                              {typeof product.category === "object"
+                                ? product.category.name
+                                : LABELS.PRODUCT.NOT_SPECIFIED}
                             </span>
                             {product.isFeatured && (
                               <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
-                                مميز
+                                {LABELS.PRODUCT.FEATURED_BADGE}
                               </span>
                             )}
                           </div>
@@ -732,7 +903,9 @@ export default function ProductsPage() {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleDelete(product._id, product.name)}
+                            onClick={() =>
+                              handleDelete(product._id, product.name)
+                            }
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

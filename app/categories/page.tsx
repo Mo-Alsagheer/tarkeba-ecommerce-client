@@ -29,6 +29,7 @@ export default function CategoriesPage() {
             .filter((category) => category.isActive !== false)
             .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
             .map((category) => (
+                console.log('Category:', category),
               <Link
                 key={category._id}
                 href={`/products?category=${category._id}`}

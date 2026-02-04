@@ -30,9 +30,10 @@ export default function ProductsPage() {
     const categoryFromUrl = searchParams.get("category");
 
     const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-    const [priceRange, setPriceRange] = useState([0, 10000]);
+    const [priceRange, setPriceRange] = useState([0, 5000]);
     const [sort, setSort] = useState("default");
     const [page, setPage] = useState(1);
 
@@ -43,11 +44,23 @@ export default function ProductsPage() {
         }
     }, [categoryFromUrl]);
 
+    // Handle search debounce
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            if (search !== debouncedSearch) {
+                setPage(1);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [search]);
+
     const availableSizes = ["30ml", "50ml", "75ml", "100ml", "150ml"];
 
     const { data: categoriesData } = useGetCategoriesQuery();
     const { data, isLoading } = useGetProductsQuery({
-        search,
+        search: debouncedSearch,
         category:
             selectedCategories.length > 0 ? selectedCategories[0] : undefined,
         minPrice: priceRange[0],
@@ -112,8 +125,8 @@ export default function ProductsPage() {
                             <Slider
                                 value={priceRange}
                                 onValueChange={setPriceRange}
-                                max={10000}
-                                step={100}
+                                max={5000}
+                                step={10}
                                 className="mt-2"
                                 dir="rtl"
                             />
@@ -189,13 +202,13 @@ export default function ProductsPage() {
                                     <SelectItem value="default">
                                         {PLACEHOLDERS.SORT.DEFAULT}
                                     </SelectItem>
-                                    <SelectItem value="price">
+                                    <SelectItem value="variants.price">
                                         {PLACEHOLDERS.SORT.PRICE_LOW_TO_HIGH}
                                     </SelectItem>
-                                    <SelectItem value="-price">
+                                    <SelectItem value="-variants.price">
                                         {PLACEHOLDERS.SORT.PRICE_HIGH_TO_LOW}
                                     </SelectItem>
-                                    <SelectItem value="-createdAt">
+                                    <SelectItem value="-_id">
                                         {PLACEHOLDERS.SORT.NEWEST}
                                     </SelectItem>
                                     <SelectItem value="-averageRating">
@@ -225,18 +238,22 @@ export default function ProductsPage() {
                                     .filter((product) => {
                                         // Filter by categories if selected
                                         if (selectedCategories.length > 0) {
-                                            const productCategoryId =
-                                                typeof product.category ===
-                                                "string"
-                                                    ? product.category
-                                                    : product.category._id;
-                                            if (
-                                                !selectedCategories.includes(
-                                                    productCategoryId,
-                                                )
-                                            ) {
-                                                return false;
+                                            const productCategories = product.categories || [];
+                                            // Fallback for legacy data structure
+                                            if (product.category) {
+                                              const catId = typeof product.category === 'string' 
+                                                  ? product.category 
+                                                  : product.category._id;
+                                              if (!productCategories.includes(catId)) {
+                                                  productCategories.push(catId);
+                                              }
                                             }
+
+                                            const hasCategory = productCategories.some(catId => 
+                                                selectedCategories.includes(catId)
+                                            );
+                                            
+                                            if (!hasCategory) return false;
                                         }
 
                                         // Filter by sizes if selected

@@ -47,36 +47,65 @@ export interface CheckoutResponse {
 }
 
 export interface OrderItem {
-  id: string;
-  productId: string;
+  _id: string;
+  orderID: string;
+  productID: {
+    _id: string;
+    name: string;
+    slug: string;
+    images: string[];
+  };
   productName: string;
-  productImage?: string;
+  productSlug: string;
+  productImage: string;
+  size: string;
   quantity: number;
-  price: number;
-  total: number;
+  unitPrice: number;
+  totalPrice: number;
+  productSnapshot?: {
+    description: string;
+    categories: string[];
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Order {
-  id: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  items: OrderItem[];
-  subtotal: number;
-  tax: number;
-  shipping: number;
-  total: number;
-  status: 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+  _id: string;
+  orderNumber: string;
+  userID: {
+    _id: string;
+    username: string;
+    email: string;
+  };
+  email?: string;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
-  paymentMethod?: string;
+  subtotal: number;
+  taxAmount: number;
+  shippingAmount: number;
+  discountAmount: number;
+  totalAmount: number;
   shippingAddress: {
-    street: string;
+    customerName: string;
+    addressLine1: string;
+    addressLine2?: string;
     city: string;
     state: string;
-    zipCode: string;
-    country: string;
-    phone: string;
+    phone?: string;
   };
+  paymentDetails?: {
+    method: string;
+    transactionId?: string;
+    paymentIntentId?: string;
+  };
+  notes?: string;
+  trackingNumber?: string | null;
+  estimatedDeliveryDate?: string | null;
+  deliveredAt?: string | null;
+  cancelledAt?: string | null;
+  cancelReason?: string | null;
+  items?: OrderItem[];
   createdAt: string;
   updatedAt: string;
 }
@@ -132,13 +161,19 @@ const ordersApi = baseApi.injectEndpoints({
           : [{ type: 'Orders', id: 'LIST' }],
     }),
     
-    getMyOrderById: builder.query<Order, string>({
-      query: (id) => `/orders/my/${id}`,
+    getMyOrderById: builder.query<{ order: Order; items: OrderItem[] }, string>({
+      query: (id) => `/orders/${id}`,
       transformResponse: (response: any) => {
         if (response?.data) return response.data;
         return response;
       },
       providesTags: (result, error, id) => [{ type: 'Orders', id }],
+    }),
+
+    // Check if user has purchased a specific product
+    hasUserPurchasedProduct: builder.query<{ hasPurchased: boolean }, string>({
+      query: (productId) => `/orders/check-purchase/${productId}`,
+      providesTags: (_result, _error, productId) => [{ type: 'Orders', id: `PURCHASE-${productId}` }],
     }),
     
     // Admin endpoints
@@ -194,10 +229,10 @@ const ordersApi = baseApi.injectEndpoints({
           : [{ type: 'Orders', id: 'ADMIN_LIST' }],
     }),
     
-    adminGetOrderById: builder.query<Order, string>({
+    adminGetOrderById: builder.query<{ order: Order; items: OrderItem[] }, string>({
       query: (id) => `/admin/orders/${id}`,
       transformResponse: (response: any) => {
-        // Handle wrapped response
+        // Handle wrapped response {order, items}
         if (response?.data) return response.data;
         return response;
       },
@@ -236,6 +271,7 @@ const ordersApi = baseApi.injectEndpoints({
 export const {
   useGetMyOrdersQuery,
   useGetMyOrderByIdQuery,
+  useHasUserPurchasedProductQuery,
   useAdminGetOrdersQuery,
   useAdminGetOrderByIdQuery,
   useAdminUpdateOrderStatusMutation,

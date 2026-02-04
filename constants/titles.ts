@@ -9,6 +9,7 @@ export const TITLES = {
     USERS: 'إدارة المستخدمين',
     ORDERS: 'الطلبات',
     ORDER_DETAILS: 'تفاصيل الطلب',
+    ORDERS_LIST: 'قائمة الطلبات',
     CREATE_CATEGORY: 'إضافة فئة جديدة',
     EDIT_CATEGORY: 'تعديل الفئة',
     CREATE_PRODUCT: 'إضافة منتج جديد',
@@ -44,6 +45,10 @@ export const TITLES = {
     ADDRESSES: 'عناويني',
     REVIEWS: 'تقييماتي',
     MY_ORDERS: 'طلباتي',
+    ORDER: 'طلب',
+    SHIPPING_ADDRESS: 'عنوان الشحن',
+    PRODUCTS: 'المنتجات',
+    ORDER_SUMMARY: 'ملخص الطلب',
   },
 
   // Component titles
@@ -139,5 +144,7 @@ export const DESCRIPTIONS = {
   // Page numbers
   PAGINATION: {
     PAGE_OF: (page: number, total: number) => `صفحة ${page} من ${total}`,
+    PAGE: 'صفحة',
+    OF: 'من',
   },
 };

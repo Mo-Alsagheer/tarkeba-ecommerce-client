@@ -7,10 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { TITLES, BUTTONS, LABELS, MESSAGES, STATUS, CURRENCY, DESCRIPTIONS } from '@/constants';
 
 const statusColors = {
   pending: 'bg-yellow-100 text-yellow-800',
-  paid: 'bg-blue-100 text-blue-800',
+  confirmed: 'bg-blue-100 text-blue-800',
   processing: 'bg-purple-100 text-purple-800',
   shipped: 'bg-indigo-100 text-indigo-800',
   delivered: 'bg-green-100 text-green-800',
@@ -35,7 +36,7 @@ export default function OrdersPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold">طلباتي</h2>
+        <h2 className="text-2xl font-bold">{TITLES.ACCOUNT.MY_ORDERS}</h2>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <Card key={i}>
@@ -55,10 +56,10 @@ export default function OrdersPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold">طلباتي</h2>
+        <h2 className="text-2xl font-bold">{TITLES.ACCOUNT.MY_ORDERS}</h2>
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-6">
-            <p className="text-red-600">حدث خطأ في تحميل الطلبات</p>
+            <p className="text-red-600">{MESSAGES.ERROR.ORDERS_LOAD_ERROR}</p>
           </CardContent>
         </Card>
       </div>
@@ -70,14 +71,14 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">طلباتي</h2>
+      <h2 className="text-2xl font-bold">{TITLES.ACCOUNT.MY_ORDERS}</h2>
 
       {orders.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
-            <p className="text-muted-foreground mb-4">لا توجد طلبات</p>
+            <p className="text-muted-foreground mb-4">{MESSAGES.EMPTY.NO_ORDERS}</p>
             <Link href="/products">
-              <Button>تصفح المنتجات</Button>
+              <Button>{BUTTONS.BROWSE_PRODUCTS}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -85,11 +86,11 @@ export default function OrdersPage() {
         <>
           <div className="space-y-4">
             {orders.map((order) => (
-              <Card key={order.id}>
+              <Card key={order._id}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle className="text-lg">طلب #{order.id}</CardTitle>
+                      <CardTitle className="text-lg">{LABELS.ORDER.ORDER_COUNT} #{order.orderNumber}</CardTitle>
                       <p className="text-sm text-muted-foreground mt-1">
                         {new Date(order.createdAt).toLocaleDateString('ar-SA', {
                           year: 'numeric',
@@ -99,24 +100,26 @@ export default function OrdersPage() {
                       </p>
                     </div>
                     <Badge className={statusColors[order.status]}>
-                      {statusLabels[order.status]}
+                      {STATUS.ORDER[order.status.toUpperCase() as keyof typeof STATUS.ORDER]}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">المجموع</span>
-                      <span className="font-bold">{order.total.toLocaleString('ar-SA')} ر.س</span>
+                      <span className="text-sm text-muted-foreground">{LABELS.CART.TOTAL}</span>
+                      <span className="font-bold">{order.totalAmount.toLocaleString('ar-SA')} {CURRENCY.DEFAULT}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">عدد المنتجات</span>
-                      <span>{order.items.length}</span>
-                    </div>
-                    <Link href={`/account/orders/${order.id}`}>
+                    {order.items && order.items.length > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">{LABELS.ORDER.PRODUCTS}</span>
+                        <span>{order.items.length}</span>
+                      </div>
+                    )}
+                    <Link href={`/account/orders/${order._id}`}>
                       <Button variant="outline" className="w-full gap-2">
                         <Eye className="h-4 w-4" />
-                        عرض التفاصيل
+                        {BUTTONS.VIEW_DETAILS}
                       </Button>
                     </Link>
                   </div>
@@ -137,7 +140,7 @@ export default function OrdersPage() {
                 <ChevronRight className="h-4 w-4" />
               </Button>
               <span className="text-sm">
-                صفحة {page} من {totalPages}
+                {DESCRIPTIONS.PAGINATION.PAGE_OF(page, totalPages)}
               </span>
               <Button
                 variant="outline"

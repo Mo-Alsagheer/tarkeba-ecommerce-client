@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi } from "./baseApi";
 
 export interface AdminStats {
   totalSales: number;
@@ -46,6 +46,24 @@ export interface DashboardAnalytics {
     productSlug: string;
     totalQuantity: number;
     totalRevenue: number;
+    productImage?: string;
+  }>;
+  recentReviews?: Array<{
+    _id: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+    productId: {
+      _id: string;
+      name: string;
+      slug: string;
+      images?: string[];
+    };
+    userId: {
+      _id: string;
+      username: string;
+      email: string;
+    };
   }>;
   orderStatusBreakdown: Array<{
     status: string;
@@ -111,85 +129,94 @@ const adminApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Legacy stats endpoint (keeping for backward compatibility)
     getAdminStats: builder.query<AdminStats, void>({
-      query: () => '/admin/stats',
-      providesTags: ['Orders', 'Products'],
+      query: () => "/admin/stats",
+      providesTags: ["Orders", "Products"],
     }),
 
     // New comprehensive dashboard analytics
     getDashboardAnalytics: builder.query<DashboardAnalytics, void>({
-      query: () => '/admin/dashboard',
-      providesTags: ['Orders', 'Products', 'User'],
+      query: () => "/admin/dashboard",
+      providesTags: ["Orders", "Products", "User"],
     }),
 
     // Sales analytics with date range
     getSalesAnalytics: builder.query<SalesAnalytics[], { days?: number }>({
       query: ({ days = 30 }) => `/admin/analytics/sales?days=${days}`,
-      providesTags: ['Orders'],
+      providesTags: ["Orders"],
     }),
 
     // Top selling products
     getTopProducts: builder.query<TopProduct[], { limit?: number }>({
       query: ({ limit = 10 }) => `/admin/analytics/top-products?limit=${limit}`,
-      providesTags: ['Orders', 'Products'],
+      providesTags: ["Orders", "Products"],
     }),
 
     // User growth analytics
     getUserGrowth: builder.query<UserGrowth[], { days?: number }>({
       query: ({ days = 30 }) => `/admin/analytics/user-growth?days=${days}`,
-      providesTags: ['User'],
+      providesTags: ["User"],
     }),
 
     // Order status breakdown
     getOrderStatusBreakdown: builder.query<OrderStatusBreakdown[], void>({
-      query: () => '/admin/analytics/order-status',
-      providesTags: ['Orders'],
+      query: () => "/admin/analytics/order-status",
+      providesTags: ["Orders"],
     }),
-    
-    getAdminUsers: builder.query<UsersResponse, { page?: number; limit?: number }>({
-      query: ({ page = 1, limit = 10 }) => {
+
+    getAdminUsers: builder.query<
+      UsersResponse,
+      { page?: number; limit?: number; search?: string }
+    >({
+      query: ({ page = 1, limit = 10, search }) => {
         const params = new URLSearchParams({
           page: page.toString(),
           limit: limit.toString(),
         });
+        if (search) {
+          params.append("search", search);
+        }
         return `/admin/users?${params}`;
       },
       providesTags: (result) =>
         result
           ? [
-              ...result.users.map(({ _id }) => ({ type: 'User' as const, id: _id })),
-              { type: 'User', id: 'LIST' },
+              ...result.users.map(({ _id }) => ({
+                type: "User" as const,
+                id: _id,
+              })),
+              { type: "User", id: "LIST" },
             ]
-          : [{ type: 'User', id: 'LIST' }],
+          : [{ type: "User", id: "LIST" }],
     }),
 
     getUserById: builder.query<AdminUser, string>({
       query: (id) => `/admin/users/${id}`,
-      providesTags: (_result, _error, id) => [{ type: 'User', id }],
+      providesTags: (_result, _error, id) => [{ type: "User", id }],
     }),
 
     updateUserRoles: builder.mutation<AdminUser, UpdateUserRolesRequest>({
       query: ({ userId, roles }) => ({
         url: `/admin/users/${userId}/roles`,
-        method: 'PATCH',
+        method: "PATCH",
         body: { roles },
       }),
       invalidatesTags: (_result, _error, { userId }) => [
-        { type: 'User', id: userId },
-        { type: 'User', id: 'LIST' },
+        { type: "User", id: userId },
+        { type: "User", id: "LIST" },
       ],
     }),
 
     deleteUser: builder.mutation<{ message: string }, string>({
       query: (id) => ({
         url: `/admin/users/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: [{ type: 'User', id: 'LIST' }],
+      invalidatesTags: [{ type: "User", id: "LIST" }],
     }),
   }),
 });
 
-export const { 
+export const {
   useGetAdminStatsQuery,
   useGetDashboardAnalyticsQuery,
   useGetSalesAnalyticsQuery,

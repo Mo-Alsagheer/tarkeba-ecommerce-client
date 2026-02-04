@@ -100,7 +100,7 @@ export function Header() {
             <Link href="/categories" className="text-sm font-medium hover:text-primary transition-colors">
               الفئات
             </Link>
-            <Link href="/about" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link href="/about-us" className="text-sm font-medium hover:text-primary transition-colors">
               من نحن
             </Link>
           </nav>

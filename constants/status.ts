@@ -3,13 +3,13 @@ export const STATUS = {
   // Order status
   ORDER: {
     PENDING: 'قيد الانتظار',
+    CONFIRMED: 'مؤكد',
     PROCESSING: 'قيد المعالجة',
     SHIPPED: 'تم الشحن',
-    DELIVERED: 'تم التوصيل',
+    DELIVERED: 'تم التسليم',
     CANCELLED: 'ملغي',
-    REFUNDED: 'تم الاسترجاع',
+    REFUNDED: 'مسترد',
     ON_HOLD: 'معلق',
-    CONFIRMED: 'مؤكد',
   },
 
   // Payment status
@@ -19,6 +19,14 @@ export const STATUS = {
     FAILED: 'فشل الدفع',
     REFUNDED: 'تم الاسترجاع',
     CASH_ON_DELIVERY: 'الدفع عند الاستلام',
+  },
+
+  // Payment methods
+  PAYMENT_METHOD: {
+    CASH_ON_DELIVERY: 'الدفع عند الاستلام',
+    CREDIT_CARD: 'بطاقة ائتمان',
+    MTN_MOMO: 'MTN Mobile Money',
+    MOOV_FLOOZ: 'Moov Money',
   },
 
   // User status

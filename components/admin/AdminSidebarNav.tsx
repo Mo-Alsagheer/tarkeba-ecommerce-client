@@ -1,46 +1,64 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { 
-  LayoutDashboard, 
-  ShoppingBag, 
-  Package, 
-  FolderTree, 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  Package,
+  FolderTree,
   Users,
-  LogOut 
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useAppDispatch } from '@/lib/hooks';
-import { logout } from '@/features/auth/authSlice';
-import { useRouter } from 'next/navigation';
+  FileText,
+  Truck,
+  MessageSquare,
+  LogOut,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAppDispatch } from "@/lib/hooks";
+import { logout } from "@/features/auth/authSlice";
+import { useRouter } from "next/navigation";
 
 const navItems = [
   {
-    title: 'لوحة التحكم',
-    href: '/admin/dashboard',
+    title: "لوحة التحكم",
+    href: "/admin/dashboard",
     icon: LayoutDashboard,
   },
   {
-    title: 'الطلبات',
-    href: '/admin/orders',
+    title: "الطلبات",
+    href: "/admin/orders",
     icon: ShoppingBag,
   },
   {
-    title: 'المنتجات',
-    href: '/admin/products',
+    title: "المنتجات",
+    href: "/admin/products",
     icon: Package,
   },
   {
-    title: 'التصنيفات',
-    href: '/admin/categories',
+    title: "التصنيفات",
+    href: "/admin/categories",
     icon: FolderTree,
   },
   {
-    title: 'المستخدمين',
-    href: '/admin/users',
+    title: "المستخدمين",
+    href: "/admin/users",
     icon: Users,
+  },
+  {
+    title: "التقييمات",
+    href: "/admin/reviews",
+    icon: MessageSquare,
+  },
+  {
+    title: "التوصيل",
+    href: "/admin/delivery",
+    icon: Truck,
+  },
+  {
+    title: "الصفحات الثابتة",
+    href: "/admin/pages",
+    icon: FileText,
   },
 ];
 
@@ -51,13 +69,16 @@ export function AdminSidebarNav() {
 
   const handleLogout = () => {
     dispatch(logout());
-    router.push('/');
+    router.push("/");
   };
 
   return (
     <div className="flex h-full flex-col gap-2">
       <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-        <Link href="/admin/dashboard" className="flex items-center gap-2 font-semibold">
+        <Link
+          href="/admin/dashboard"
+          className="flex items-center gap-2 font-semibold"
+        >
           <LayoutDashboard className="h-6 w-6" />
           <span>لوحة الإدارة</span>
         </Link>
@@ -66,17 +87,16 @@ export function AdminSidebarNav() {
         <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
-            
+            const isActive =
+              pathname === item.href || pathname?.startsWith(item.href + "/");
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary',
-                  isActive
-                    ? 'bg-muted text-primary'
-                    : 'text-muted-foreground'
+                  "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
+                  isActive ? "bg-muted text-primary" : "text-muted-foreground",
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -87,8 +107,8 @@ export function AdminSidebarNav() {
         </nav>
       </div>
       <div className="mt-auto p-4 border-t">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full justify-start gap-2"
           onClick={handleLogout}
         >

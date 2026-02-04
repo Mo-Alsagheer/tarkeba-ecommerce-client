@@ -68,6 +68,11 @@ export const LABELS = {
     SEO_SECTION: 'تحسين محركات البحث (SEO)',
     IMAGES_SECTION: 'صور المنتج',
     CATEGORIES_SECTION: 'الفئات',
+    STOCK_LABEL: 'المخزون',
+    CATEGORY_LABEL: 'الفئة',
+    FEATURED_BADGE: 'مميز',
+    PREVIEW: 'معاينة',
+    NOT_SPECIFIED: 'غير محدد',
   },
 
   // Order labels
@@ -79,6 +84,16 @@ export const LABELS = {
     PRODUCTS: 'المنتجات',
     SHIPPING_ADDRESS: 'عنوان الشحن',
     PAYMENT_METHOD: 'طريقة الدفع',
+    ORDER_COUNT: 'طلب',
+    PRODUCT_COUNT: 'منتج',
+    SUBTOTAL: 'المجموع الفرعي',
+    TAX: 'الضريبة',
+    SHIPPING: 'الشحن',
+    DISCOUNT: 'الخصم',
+    PHONE: 'الهاتف',
+    QUANTITY: 'الكمية',
+    SIZE: 'المقاس',
+    NOTES: 'ملاحظات',
   },
 
   // User labels

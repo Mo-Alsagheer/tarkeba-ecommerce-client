@@ -6,13 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Package, MapPin, CreditCard } from 'lucide-react';
+import { ArrowLeft, Package, MapPin, CreditCard, Star } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { STATUS, CURRENCY } from '@/constants/status';
+import { TITLES } from '@/constants/titles';
+import { LABELS } from '@/constants/labels';
+import { MESSAGES } from '@/constants/messages';
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800',
-  paid: 'bg-blue-100 text-blue-800',
+  confirmed: 'bg-blue-100 text-blue-800',
   processing: 'bg-purple-100 text-purple-800',
   shipped: 'bg-indigo-100 text-indigo-800',
   delivered: 'bg-green-100 text-green-800',
@@ -20,27 +24,19 @@ const statusColors = {
   refunded: 'bg-gray-100 text-gray-800',
 };
 
-const statusLabels = {
-  pending: 'قيد الانتظار',
-  paid: 'مدفوع',
-  processing: 'قيد المعالجة',
-  shipped: 'تم الشحن',
-  delivered: 'تم التسليم',
-  cancelled: 'ملغي',
-  refunded: 'مسترد',
-};
-
-const paymentStatusLabels = {
-  pending: 'قيد الانتظار',
-  paid: 'مدفوع',
-  failed: 'فشل',
-  refunded: 'مسترد',
+const paymentMethodLabels: Record<string, string> = {
+  cash_on_delivery: STATUS.PAYMENT_METHOD.CASH_ON_DELIVERY,
+  credit_card: STATUS.PAYMENT_METHOD.CREDIT_CARD,
+  mtn_momo: STATUS.PAYMENT_METHOD.MTN_MOMO,
+  moov_flooz: STATUS.PAYMENT_METHOD.MOOV_FLOOZ,
 };
 
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const { data: order, isLoading, error } = useGetMyOrderByIdQuery(resolvedParams.id);
-
+  const { data, isLoading, error } = useGetMyOrderByIdQuery(resolvedParams.id);
+  const order = data?.order;
+  const items = data?.items || [];
+  console.log(data)
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -50,7 +46,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <h2 className="text-2xl font-bold">تفاصيل الطلب</h2>
+          <h2 className="text-2xl font-bold">{TITLES.ACCOUNT.ORDER_DETAILS}</h2>
         </div>
         <div className="grid gap-6">
           {[1, 2, 3].map((i) => (
@@ -77,11 +73,11 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <h2 className="text-2xl font-bold">تفاصيل الطلب</h2>
+          <h2 className="text-2xl font-bold">{TITLES.ACCOUNT.ORDER_DETAILS}</h2>
         </div>
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-6">
-            <p className="text-red-600">لم يتم العثور على الطلب</p>
+            <p className="text-red-600">{MESSAGES.ERROR.ORDER_NOT_FOUND}</p>
           </CardContent>
         </Card>
       </div>
@@ -99,7 +95,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </Button>
           </Link>
           <div>
-            <h2 className="text-2xl font-bold">طلب #{order.id}</h2>
+            <h2 className="text-2xl font-bold">{TITLES.ACCOUNT.ORDER} #{order.orderNumber}</h2>
             <p className="text-sm text-muted-foreground">
               {new Date(order.createdAt).toLocaleDateString('ar-SA', {
                 year: 'numeric',
@@ -113,10 +109,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         </div>
         <div className="flex gap-2">
           <Badge className={statusColors[order.status]}>
-            {statusLabels[order.status]}
+            {STATUS.ORDER[order.status.toUpperCase() as keyof typeof STATUS.ORDER]}
           </Badge>
           <Badge variant="outline">
-            {paymentStatusLabels[order.paymentStatus]}
+            {STATUS.PAYMENT[order.paymentStatus.toUpperCase() as keyof typeof STATUS.PAYMENT]}
           </Badge>
         </div>
       </div>
@@ -126,14 +122,17 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5" />
-            عنوان الشحن
+            {TITLES.ACCOUNT.SHIPPING_ADDRESS}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <p>{order.shippingAddress.street}</p>
+          <p className="font-medium">{order.shippingAddress.customerName}</p>
+          <p>{order.shippingAddress.addressLine1}</p>
+          {order.shippingAddress.addressLine2 && <p>{order.shippingAddress.addressLine2}</p>}
           <p>{order.shippingAddress.city}, {order.shippingAddress.state}</p>
-          <p>{order.shippingAddress.zipCode}, {order.shippingAddress.country}</p>
-          <p className="text-sm text-muted-foreground">الهاتف: {order.shippingAddress.phone}</p>
+          {order.shippingAddress.phone && (
+            <p className="text-sm text-muted-foreground">{LABELS.ORDER.PHONE}: {order.shippingAddress.phone}</p>
+          )}
         </CardContent>
       </Card>
 
@@ -142,13 +141,13 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
-            المنتجات
+            {TITLES.ACCOUNT.PRODUCTS}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {order.items.map((item, index) => (
-              <div key={item.id}>
+            {items && items.length > 0 ? items.map((item, index) => (
+              <div key={item._id}>
                 <div className="flex items-center gap-4">
                   {item.productImage && (
                     <Image
@@ -160,18 +159,31 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     />
                   )}
                   <div className="flex-1">
-                    <Link href={`/products/${item.productId}`}>
+                    <Link href={`/products/${item.productID.slug || item.productID._id}`}>
                       <p className="font-medium hover:text-primary cursor-pointer">{item.productName}</p>
                     </Link>
                     <p className="text-sm text-muted-foreground">
-                      الكمية: {item.quantity} × {item.price.toLocaleString('ar-SA')} ر.س
+                      {LABELS.ORDER.QUANTITY}: {item.quantity} × {item.unitPrice.toLocaleString('ar-SA')} {CURRENCY.DEFAULT}
                     </p>
+                    {item.size && (
+                      <p className="text-xs text-muted-foreground">{LABELS.ORDER.SIZE}: {item.size}</p>
+                    )}
+                    {order.status === 'delivered' && (
+                      <Link href={`/products/${item.productID.slug || item.productID._id}?review=true&orderId=${order._id}`}>
+                        <Button variant="outline" size="sm" className="mt-2">
+                          <Star className="h-4 w-4 mr-1" />
+                          Write Review
+                        </Button>
+                      </Link>
+                    )}
                   </div>
-                  <p className="font-bold">{item.total.toLocaleString('ar-SA')} ر.س</p>
+                  <p className="font-bold">{item.totalPrice.toLocaleString('ar-SA')} {CURRENCY.DEFAULT}</p>
                 </div>
-                {index < order.items.length - 1 && <Separator className="mt-4" />}
+                {index < items.length - 1 && <Separator className="mt-4" />}
               </div>
-            ))}
+            )) : (
+              <p className="text-center text-muted-foreground py-4">{MESSAGES.EMPTY.NO_ORDER_ITEMS}</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -181,31 +193,46 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            ملخص الطلب
+            {TITLES.ACCOUNT.ORDER_SUMMARY}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">المجموع الفرعي</span>
-            <span>{order.subtotal.toLocaleString('ar-SA')} ر.س</span>
+            <span className="text-muted-foreground">{LABELS.ORDER.SUBTOTAL}</span>
+            <span>{order.subtotal.toLocaleString('ar-SA')} {CURRENCY.DEFAULT}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">الضريبة</span>
-            <span>{order.tax.toLocaleString('ar-SA')} ر.س</span>
+            <span className="text-muted-foreground">{LABELS.ORDER.TAX}</span>
+            <span>{order.taxAmount.toLocaleString('ar-SA')} {CURRENCY.DEFAULT}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">الشحن</span>
-            <span>{order.shipping.toLocaleString('ar-SA')} ر.س</span>
+            <span className="text-muted-foreground">{LABELS.ORDER.SHIPPING}</span>
+            <span>{order.shippingAmount.toLocaleString('ar-SA')} {CURRENCY.DEFAULT}</span>
           </div>
+          {order.discountAmount > 0 && (
+            <div className="flex justify-between text-green-600">
+              <span>{LABELS.ORDER.DISCOUNT}</span>
+              <span>-{order.discountAmount.toLocaleString('ar-SA')} {CURRENCY.DEFAULT}</span>
+            </div>
+          )}
           <Separator />
           <div className="flex justify-between text-lg font-bold">
-            <span>الإجمالي</span>
-            <span>{order.total.toLocaleString('ar-SA')} ر.س</span>
+            <span>{LABELS.ORDER.TOTAL}</span>
+            <span>{order.totalAmount.toLocaleString('ar-SA')} {CURRENCY.DEFAULT}</span>
           </div>
-          {order.paymentMethod && (
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">طريقة الدفع</span>
-              <span>{order.paymentMethod}</span>
+          <Separator />
+          {order.paymentDetails?.method && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{LABELS.ORDER.PAYMENT_METHOD}</span>
+              <span className="font-medium">
+                {paymentMethodLabels[order.paymentDetails.method] || order.paymentDetails.method}
+              </span>
+            </div>
+          )}
+          {order.notes && (
+            <div className="pt-3 border-t">
+              <p className="text-sm text-muted-foreground mb-1">{LABELS.ORDER.NOTES}:</p>
+              <p className="text-sm">{order.notes}</p>
             </div>
           )}
         </CardContent>

@@ -15,7 +15,7 @@ export function Footer() {
              {DESCRIPTIONS.FOOTER.ABOUT_TARKEBA}
             </p>
             <div className="flex gap-4 mt-4">
-              <Link href="https://instagram.com" target="_blank" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link href="https://www.instagram.com/tarkeba_perfume/" target="_blank" className="text-muted-foreground hover:text-primary transition-colors">
                 <Instagram className="h-5 w-5" />
               </Link>
               <Link href="https://facebook.com" target="_blank" className="text-muted-foreground hover:text-primary transition-colors">
@@ -42,21 +42,21 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">{NAVIGATION.FOOTER.QUICK_LINKS_TITLE}</h3>
+            <h3 className="text-lg font-semibold mb-4">السياسات</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/products" className="text-muted-foreground hover:text-primary">
-                  {NAVIGATION.FOOTER.QUICK_LINKS.ALL_PRODUCTS}
+                <Link href="/privacy-policy" className="text-muted-foreground hover:text-primary">
+                  سياسة الخصوصية
                 </Link>
               </li>
               <li>
-                <Link href="/categories" className="text-muted-foreground hover:text-primary">
-                  {NAVIGATION.FOOTER.QUICK_LINKS.MENS_PERFUMES}
+                <Link href="/terms-of-service" className="text-muted-foreground hover:text-primary">
+                  الشروط والأحكام
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="text-muted-foreground hover:text-primary">
-                  {NAVIGATION.FOOTER.QUICK_LINKS.WOMENS_PERFUMES}
+                <Link href="/shipping-delivery" className="text-muted-foreground hover:text-primary">
+                  الشحن والتوصيل
                 </Link>
               </li>
             </ul>
@@ -77,7 +77,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-muted-foreground hover:text-primary">
+                <Link href="/faq" className="text-muted-foreground hover:text-primary">
                  {NAVIGATION.FOOTER.CUSTOMER_SERVICE.FAQ}
                 </Link>
               </li>

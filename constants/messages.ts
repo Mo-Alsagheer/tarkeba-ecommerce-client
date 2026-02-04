@@ -44,11 +44,13 @@ export const MESSAGES = {
     PRODUCTS_LOAD_FAILED: 'حدث خطأ في تحميل المنتجات',
     ORDERS_LOAD_FAILED: 'حدث خطأ في تحميل الطلبات',
     ORDER_DETAILS_LOAD_FAILED: 'حدث خطأ في تحميل تفاصيل الطلب',
+    ORDER_NOT_FOUND: 'لم يتم العثور على الطلب',
     IMAGE_FILE_TOO_LARGE: (fileName: string) => `${fileName} كبير جداً (الحد الأقصى 5MB)`,
     NOT_VALID_IMAGE: (fileName: string) => `${fileName} ليس صورة صالحة`,
     STATS_LOAD_FAILED: 'فشل تحميل الإحصائيات',
     USERS_LOAD_FAILED: 'حدث خطأ في تحميل المستخدمين',
     PRODUCT_NOT_FOUND: 'المنتج غير موجود',
+    ORDERS_LOAD_ERROR: 'حدث خطأ في تحميل الطلبات',
   },
 
   // Confirmation messages
@@ -56,6 +58,7 @@ export const MESSAGES = {
     DELETE_CATEGORY: 'هل أنت متأكد من حذف الفئة',
     DELETE_PRODUCT: 'هل أنت متأكد من حذف المنتج',
     DELETE_USER: 'هل أنت متأكد من حذف المستخدم',
+    DELETE_CONFIRMATION: '؟',
   },
 
   // Empty states
@@ -67,11 +70,13 @@ export const MESSAGES = {
     NO_SEARCH_RESULTS: 'لم يتم العثور على نتائج',
     NO_USERS: 'لا يوجد مستخدمين',
     NO_ORDERS: 'لا توجد طلبات',
+    NO_ORDERS_FOUND: 'لا توجد طلبات',
     CART_EMPTY: 'السلة فارغة',
     NO_REVIEWS: 'لا توجد تقييمات لهذا المنتج حتى الآن',
     NO_PHONE: 'لم يتم إضافة رقم هاتف',
     NO_ADDRESSES: 'لم تقم بإضافة أي عناوين بعد',
     NO_ORDER_REVIEWS: 'لم تقم بكتابة أي تقييمات بعد',
+    NO_ORDER_ITEMS: 'لا توجد عناصر للعرض',
     PLEASE_LOGIN: 'يرجى تسجيل الدخول',
   },
 

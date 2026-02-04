@@ -23,14 +23,18 @@ export function ProductCard({ product }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
     
+    // Get price from variant or base price
+    const productPrice = product.variants?.[0]?.price || product.price;
+    const productStock = product.variants?.[0]?.stock || product.stock;
+    
     dispatch(
       addToCart({
         productId: product._id,
         name: product.name,
-        price: product.price,
+        price: productPrice,
         quantity: 1,
         image: product.images[0] || '/placeholder.png',
-        stock: product.stock,
+        stock: productStock,
       })
     );
     
@@ -38,7 +42,7 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Link href={`/products/${product._id}`}>
+    <Link href={`/products/${product.slug || product._id}`}>
       <Card className="flex flex-col justify-between h-full hover:shadow-lg transition-shadow duration-300 py-0">
         <CardContent className="p-0">
           <div className="relative aspect-square overflow-hidden rounded-t-lg bg-muted">

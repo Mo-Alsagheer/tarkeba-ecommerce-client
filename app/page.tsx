@@ -97,12 +97,11 @@ export default function Home() {
             <p className="text-muted-foreground">{TITLES.HOME.SELECT_FAVORITE_CATEGORY}</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { slug: 'men', name: 'عطور رجالية', image: '/products/OudRoyalEDP1.webp' },
-              { slug: 'women', name: 'عطور نسائية', image: '/products/flower-garden.jpg' },
-              { slug: 'oriental', name: 'عطور للجنسين', image: '/products/men.webp' },
-              { slug: 'french', name: 'عطور فاخرة', image: '/products/royal-saffron.jpg' }
+              { slug: 'men-perfumes', name: 'عطور رجالية', image: 'https://res.cloudinary.com/drvgczmup/image/upload/v1769741914/men_Large_xyfc6d.png' },
+              { slug: 'women-perfumes', name: 'عطور نسائية', image: 'https://res.cloudinary.com/drvgczmup/image/upload/v1769741910/women_Large_e5g3i9.png' },
+              { slug: 'unisex-perfumes', name: 'عطور للجنسين', image: 'https://res.cloudinary.com/drvgczmup/image/upload/v1769741915/unisex_Large_jqxjog.png' }
             ].map((category) => {
               const cat = categories?.find(c => c.slug === category.slug);
               const href = cat ? `/products?category=${cat._id}` : '/products';
@@ -110,18 +109,19 @@ export default function Home() {
               <Link
                 key={category.name}
                 href={href}
-                className="group relative aspect-square overflow-hidden rounded-lg border hover:border-primary transition-all"
+                className="group relative aspect-[4/5] overflow-hidden rounded-xl border-0 shadow-lg hover:shadow-xl transition-all"
               >
                 <Image
                   src={category.image}
                   alt={category.name}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-110"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
-                  <h3 className="text-white text-xl font-bold text-center px-2">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
+                  <h3 className="text-white text-2xl font-bold mb-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                     {category.name}
                   </h3>
+                  <div className="h-1 w-12 bg-primary rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
                 </div>
               </Link>
             );

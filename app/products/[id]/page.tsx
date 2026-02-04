@@ -1,7 +1,7 @@
 'use client';
 
 import { use } from 'react';
-import { useGetProductByIdQuery } from '@/features/api/productsApi';
+import { useGetProductByIdQuery, useGetProductBySlugQuery } from '@/features/api/productsApi';
 import { useAppDispatch } from '@/lib/hooks';
 import { addToCart } from '@/features/cart/cartSlice';
 import { Button } from '@/components/ui/button';
@@ -10,19 +10,126 @@ import { Separator } from '@/components/ui/separator';
 import { ShoppingCart, Star, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { TITLES, BUTTONS, MESSAGES, CURRENCY, LABELS } from '@/constants';
+import Head from 'next/head';
+import { useSearchParams } from 'next/navigation';
 
 import { ProductReviews } from '@/components/products/ProductReviews';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { data: product, isLoading } = useGetProductByIdQuery(id);
+  const searchParams = useSearchParams();
+  const shouldOpenReviewForm = searchParams.get('review') === 'true';
+  const orderId = searchParams.get('orderId') || undefined;
+  
+  // Try to fetch by slug first, if it fails, fetch by ID
+  const { data: productBySlug, isLoading: isLoadingSlug, error: slugError } = useGetProductBySlugQuery(id, {
+    skip: false,
+  });
+  const { data: productById, isLoading: isLoadingId } = useGetProductByIdQuery(id, {
+    skip: !slugError, // Only fetch by ID if slug query failed
+  });
+  
+  const product = productBySlug || productById;
+  const isLoading = isLoadingSlug || isLoadingId;
   const dispatch = useAppDispatch();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
+
+  // Update page title and meta description when product loads
+  useEffect(() => {
+    if (product) {
+      // Use SEO title if available, otherwise use product name
+      const pageTitle = product.seo?.title || `${product.name} | تركيبة`;
+      document.title = pageTitle;
+      
+      // Update meta description if available
+      const metaDescription = product.seo?.description || product.description;
+      let descTag = document.querySelector('meta[name="description"]');
+      if (!descTag) {
+        descTag = document.createElement('meta');
+        descTag.setAttribute('name', 'description');
+        document.head.appendChild(descTag);
+      }
+      descTag.setAttribute('content', metaDescription);
+      
+      // Update meta keywords if available
+      if (product.seo?.keywords && product.seo.keywords.length > 0) {
+        let keywordsTag = document.querySelector('meta[name="keywords"]');
+        if (!keywordsTag) {
+          keywordsTag = document.createElement('meta');
+          keywordsTag.setAttribute('name', 'keywords');
+          document.head.appendChild(keywordsTag);
+        }
+        keywordsTag.setAttribute('content', product.seo.keywords.join(', '));
+      }
+      
+      // Open Graph tags
+      const updateOGTag = (property: string, content: string) => {
+        let tag = document.querySelector(`meta[property="${property}"]`);
+        if (!tag) {
+          tag = document.createElement('meta');
+          tag.setAttribute('property', property);
+          document.head.appendChild(tag);
+        }
+        tag.setAttribute('content', content);
+      };
+      
+      updateOGTag('og:title', product.seo?.title || product.name);
+      updateOGTag('og:description', product.seo?.description || product.description);
+      updateOGTag('og:image', product.images[0] || '');
+      updateOGTag('og:type', 'product');
+    }
+  }, [product]);
+
+  // Update page title and meta description when product loads
+  useEffect(() => {
+    if (product) {
+      // Use SEO title if available, otherwise use product name
+      const pageTitle = product.seo?.title || `${product.name} | تركيبة`;
+      document.title = pageTitle;
+      
+      // Update meta description if available
+      const metaDescription = product.seo?.description || product.description;
+      let descTag = document.querySelector('meta[name="description"]');
+      if (!descTag) {
+        descTag = document.createElement('meta');
+        descTag.setAttribute('name', 'description');
+        document.head.appendChild(descTag);
+      }
+      descTag.setAttribute('content', metaDescription);
+      
+      // Update meta keywords if available
+      if (product.seo?.keywords && product.seo.keywords.length > 0) {
+        let keywordsTag = document.querySelector('meta[name="keywords"]');
+        if (!keywordsTag) {
+          keywordsTag = document.createElement('meta');
+          keywordsTag.setAttribute('name', 'keywords');
+          document.head.appendChild(keywordsTag);
+        }
+        keywordsTag.setAttribute('content', product.seo.keywords.join(', '));
+      }
+      
+      // Open Graph tags
+      const updateOGTag = (property: string, content: string) => {
+        let tag = document.querySelector(`meta[property="${property}"]`);
+        if (!tag) {
+          tag = document.createElement('meta');
+          tag.setAttribute('property', property);
+          document.head.appendChild(tag);
+        }
+        tag.setAttribute('content', content);
+      };
+      
+      updateOGTag('og:title', product.seo?.title || product.name);
+      updateOGTag('og:description', product.seo?.description || product.description);
+      updateOGTag('og:image', product.images[0] || '');
+      updateOGTag('og:type', 'product');
+    }
+  }, [product]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -45,7 +152,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       })
     );
     
-    toast.success(MESSAGES.SUCCESS.CART_ADD);
+    toast.success(MESSAGES.SUCCESS.PRODUCT_ADDED_TO_CART);
   };
 
   if (isLoading) {
@@ -170,10 +277,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          <div>
-            <h3 className="font-semibold mb-2">{TITLES.COMPONENTS.CATEGORY}</h3>
-            <Badge variant="secondary">{product.category.name}</Badge>
-          </div>
+          {product.category && typeof product.category === 'object' && product.category.name && (
+            <div>
+              <h3 className="font-semibold mb-2">{TITLES.COMPONENTS.CATEGORY}</h3>
+              <Badge variant="secondary">{product.category.name}</Badge>
+            </div>
+          )}
 
           <Separator />
 
@@ -219,6 +328,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         productId={product._id}
         averageRating={product.averageRating}
         reviewCount={product.reviewCount}
+        openReviewForm={shouldOpenReviewForm}
+        orderId={orderId}
       />
     </div>
   );

@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 import {
   useGetAdminUsersQuery,
   useUpdateUserRolesMutation,
   useDeleteUserMutation,
   type AdminUser,
-} from '@/features/api/adminApi';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+} from "@/features/api/adminApi";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Users as UsersIcon,
   Search,
@@ -21,14 +21,26 @@ import {
   Save,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react';
-import { toast } from 'sonner';
+} from "lucide-react";
+import { toast } from "sonner";
 
-const AVAILABLE_ROLES = ['customer', 'admin', 'moderator'];
+const AVAILABLE_ROLES = ["customer", "admin", "moderator"];
 
 export default function UsersPage() {
   const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput);
+      setPage(1); // Reset to first page on search
+    }, 500); // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   const { data, isLoading, error } = useGetAdminUsersQuery({
     page,
     limit: 10,
@@ -42,7 +54,7 @@ export default function UsersPage() {
 
   const users = data?.users || [];
   const totalPages = data?.pages || 1;
-
+  console.log(data);
   const startEdit = (user: AdminUser) => {
     setEditingId(user._id);
     setSelectedRoles([...user.roles]);
@@ -55,36 +67,40 @@ export default function UsersPage() {
 
   const handleUpdateRoles = async (userId: string) => {
     if (selectedRoles.length === 0) {
-      toast.error('يجب اختيار دور واحد على الأقل');
+      toast.error("يجب اختيار دور واحد على الأقل");
       return;
     }
 
     try {
       await updateUserRoles({ userId, roles: selectedRoles }).unwrap();
-      toast.success('تم تحديث الأدوار بنجاح');
+      toast.success("تم تحديث الأدوار بنجاح");
       setEditingId(null);
       setSelectedRoles([]);
     } catch {
-      toast.error('فشل في تحديث الأدوار');
+      toast.error("فشل في تحديث الأدوار");
     }
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`هل أنت متأكد من حذف المستخدم "${name}"؟ هذا الإجراء لا يمكن التراجع عنه.`)) {
+    if (
+      !confirm(
+        `هل أنت متأكد من حذف المستخدم "${name}"؟ هذا الإجراء لا يمكن التراجع عنه.`,
+      )
+    ) {
       return;
     }
 
     try {
       await deleteUser(id).unwrap();
-      toast.success('تم حذف المستخدم بنجاح');
+      toast.success("تم حذف المستخدم بنجاح");
     } catch {
-      toast.error('فشل في حذف المستخدم');
+      toast.error("فشل في حذف المستخدم");
     }
   };
 
   const toggleRole = (role: string) => {
     setSelectedRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
     );
   };
 
@@ -128,7 +144,7 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold">إدارة المستخدمين</h1>
         </div>
         <div className="text-sm text-muted-foreground">
-          إجمالي المستخدمين: {data?.total || 0}
+          إجمالي المستخدمين: {users?.length || 0}
         </div>
       </div>
 
@@ -139,11 +155,8 @@ export default function UsersPage() {
             <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="ابحث عن مستخدم (الاسم أو البريد الإلكتروني)..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setPage(1); // Reset to first page on search
-              }}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="pr-10"
             />
           </div>
@@ -156,7 +169,7 @@ export default function UsersPage() {
           <div className="divide-y">
             {users.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
-                {searchQuery ? 'لم يتم العثور على نتائج' : 'لا يوجد مستخدمين'}
+                {searchQuery ? "لم يتم العثور على نتائج" : "لا يوجد مستخدمين"}
               </div>
             ) : (
               users.map((user) => (
@@ -171,23 +184,38 @@ export default function UsersPage() {
                               key={role}
                               type="button"
                               size="sm"
-                              variant={selectedRoles.includes(role) ? 'default' : 'outline'}
+                              variant={
+                                selectedRoles.includes(role)
+                                  ? "default"
+                                  : "outline"
+                              }
                               onClick={() => toggleRole(role)}
                             >
-                              {role === 'admin' && '👑 '}
-                              {role === 'moderator' && '🛡️ '}
-                              {role === 'customer' && '👤 '}
-                              {role === 'admin' ? 'مدير' : role === 'moderator' ? 'مشرف' : 'عميل'}
+                              {role === "admin" && "👑 "}
+                              {role === "moderator" && "🛡️ "}
+                              {role === "customer" && "👤 "}
+                              {role === "admin"
+                                ? "مدير"
+                                : role === "moderator"
+                                  ? "مشرف"
+                                  : "عميل"}
                             </Button>
                           ))}
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={() => handleUpdateRoles(user._id)}>
+                        <Button
+                          size="sm"
+                          onClick={() => handleUpdateRoles(user._id)}
+                        >
                           <Save className="ml-2 h-4 w-4" />
                           حفظ
                         </Button>
-                        <Button size="sm" variant="outline" onClick={cancelEdit}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={cancelEdit}
+                        >
                           <X className="ml-2 h-4 w-4" />
                           إلغاء
                         </Button>
@@ -204,9 +232,14 @@ export default function UsersPage() {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {user.username}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {user.email}
+                        </p>
                         {user.phone && (
-                          <p className="text-sm text-muted-foreground" dir="ltr">
+                          <p className="text-sm text-muted-foreground">
                             {user.phone}
                           </p>
                         )}
@@ -214,17 +247,24 @@ export default function UsersPage() {
                           {user.roles.map((role) => (
                             <Badge
                               key={role}
-                              variant={role === 'admin' ? 'default' : 'secondary'}
+                              variant={
+                                role === "admin" ? "default" : "secondary"
+                              }
                             >
-                              {role === 'admin' && '👑 '}
-                              {role === 'moderator' && '🛡️ '}
-                              {role === 'customer' && '👤 '}
-                              {role === 'admin' ? 'مدير' : role === 'moderator' ? 'مشرف' : 'عميل'}
+                              {role === "admin" && "👑 "}
+                              {role === "moderator" && "🛡️ "}
+                              {role === "customer" && "👤 "}
+                              {role === "admin"
+                                ? "مدير"
+                                : role === "moderator"
+                                  ? "مشرف"
+                                  : "عميل"}
                             </Badge>
                           ))}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          انضم في: {new Date(user.createdAt).toLocaleDateString('ar-SA')}
+                          انضم في:{" "}
+                          {new Date(user.createdAt).toLocaleDateString("ar-SA")}
                         </p>
                       </div>
                       <div className="flex gap-2">

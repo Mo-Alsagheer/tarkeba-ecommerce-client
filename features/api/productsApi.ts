@@ -7,6 +7,12 @@ export interface ProductVariant {
   comparePrice?: number;
 }
 
+export interface ProductSEO {
+  title?: string;
+  description?: string;
+  keywords?: string[];
+}
+
 export interface Product {
   _id: string;
   name: string;
@@ -16,14 +22,16 @@ export interface Product {
   stock: number;
   images: string[];
   variants: ProductVariant[];
-  category: {
+  categories?: string[]; // Array of Category IDs
+  category?: {
     _id: string;
     name: string;
     slug: string;
-  };
+  } | string;
   isFeatured: boolean;
   averageRating: number;
   reviewCount: number;
+  seo?: ProductSEO;
   createdAt: string;
   updatedAt: string;
 }
