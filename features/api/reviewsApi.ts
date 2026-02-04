@@ -12,6 +12,7 @@ interface Review {
   productId: {
     _id: string;
     name: string;
+    slug?: string;
     images: string[];
   } | string;
   userId: {
