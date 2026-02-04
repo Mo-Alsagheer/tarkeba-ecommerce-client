@@ -155,7 +155,7 @@ const ordersApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.orders.map(({ id }) => ({ type: 'Orders' as const, id })),
+              ...result.orders.map(({ _id }) => ({ type: 'Orders' as const, id: _id })),
               { type: 'Orders', id: 'LIST' },
             ]
           : [{ type: 'Orders', id: 'LIST' }],
@@ -171,7 +171,7 @@ const ordersApi = baseApi.injectEndpoints({
     }),
 
     // Check if user has purchased a specific product
-    hasUserPurchasedProduct: builder.query<{ hasPurchased: boolean }, string>({
+    hasUserPurchasedProduct: builder.query<{ hasPurchased: boolean; orderId?: string }, string>({
       query: (productId) => `/orders/check-purchase/${productId}`,
       providesTags: (_result, _error, productId) => [{ type: 'Orders', id: `PURCHASE-${productId}` }],
     }),
@@ -223,7 +223,7 @@ const ordersApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.orders.map(({ id }) => ({ type: 'Orders' as const, id })),
+              ...result.orders.map(({ _id }) => ({ type: 'Orders' as const, id: _id })),
               { type: 'Orders', id: 'ADMIN_LIST' },
             ]
           : [{ type: 'Orders', id: 'ADMIN_LIST' }],

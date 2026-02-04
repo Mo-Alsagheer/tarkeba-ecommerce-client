@@ -224,11 +224,8 @@ export function ProductReviews({ productId, averageRating, reviewCount, openRevi
 
               <div className="space-y-2">
                 {[5, 4, 3, 2, 1].map((stars) => {
-                  const count = ratingDistribution[0][stars as keyof typeof ratingDistribution] || 0;
-                  console.log("count", count);
-                  console.log(ratingDistribution[0][stars as keyof typeof ratingDistribution]);
+                  const count = ratingDistribution[stars as 1 | 2 | 3 | 4 | 5] || 0;
                   const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
-                  console.log("percentage", percentage);
                   return (
                     <div key={stars} className="flex items-center gap-2 text-sm">
                       <span className="w-3">{stars}</span>

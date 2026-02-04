@@ -29,6 +29,8 @@ export interface Product {
     slug: string;
   } | string;
   isFeatured: boolean;
+  isActive?: boolean;
+  tags?: string[];
   averageRating: number;
   reviewCount: number;
   seo?: ProductSEO;

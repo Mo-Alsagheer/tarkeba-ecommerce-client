@@ -297,7 +297,9 @@ export default function ProductsPage() {
     setEditingId(product._id);
     const categoryIds = Array.isArray(product.category) 
       ? product.category.map(c => typeof c === 'string' ? c : c._id)
-      : [typeof product.category === 'string' ? product.category : product.category._id];
+      : product.category 
+        ? (typeof product.category === 'string' ? [product.category] : [product.category._id])
+        : [];
 
     const newFormData = {
       name: product.name,
