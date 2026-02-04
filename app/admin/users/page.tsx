@@ -53,9 +53,8 @@ export default function UsersPage() {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
   const users = data?.users || [];
-  const totalPages = data?.pages || 1;
-  console.log(data);
   const totalPages = data?.pagination?.pages || 1;
+  console.log(data);
 
   const startEdit = (user: AdminUser) => {
     setEditingId(user._id);
