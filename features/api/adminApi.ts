@@ -102,6 +102,7 @@ export interface OrderStatusBreakdown {
 export interface AdminUser {
   _id: string;
   name: string;
+  username?: string;
   email: string;
   phone?: string;
   roles: string[];
