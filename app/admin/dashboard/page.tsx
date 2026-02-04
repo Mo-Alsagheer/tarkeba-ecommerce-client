@@ -17,7 +17,8 @@ import { TITLES, MESSAGES, CURRENCY, LABELS, STATUS } from "@/constants";
 import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-const statusColors = {
+
+const statusColors: Record<string, string> = {
     pending: "bg-yellow-100 text-yellow-800",
     confirmed: "bg-blue-100 text-blue-800",
     processing: "bg-purple-100 text-purple-800",
