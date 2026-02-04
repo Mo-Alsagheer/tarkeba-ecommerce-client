@@ -56,6 +56,7 @@ export const MESSAGES = {
     DELETE_CATEGORY: 'هل أنت متأكد من حذف الفئة',
     DELETE_PRODUCT: 'هل أنت متأكد من حذف المنتج',
     DELETE_USER: 'هل أنت متأكد من حذف المستخدم',
+    DELETE_CONFIRMATION: '؟',
   },
 
   // Empty states

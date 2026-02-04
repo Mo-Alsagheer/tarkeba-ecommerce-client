@@ -41,7 +41,7 @@ export default function UsersPage() {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
   const users = data?.users || [];
-  const totalPages = data?.pages || 1;
+  const totalPages = data?.pagination?.pages || 1;
 
   const startEdit = (user: AdminUser) => {
     setEditingId(user._id);
@@ -128,7 +128,7 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold">إدارة المستخدمين</h1>
         </div>
         <div className="text-sm text-muted-foreground">
-          إجمالي المستخدمين: {data?.total || 0}
+          إجمالي المستخدمين: {data?.pagination?.total || 0}
         </div>
       </div>
 
