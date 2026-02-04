@@ -31,8 +31,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { CURRENCY } from "@/constants";
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
+  confirmed: "bg-blue-100 text-blue-800",
   processing: "bg-purple-100 text-purple-800",
   shipped: "bg-indigo-100 text-indigo-800",
   delivered: "bg-green-100 text-green-800",
@@ -40,8 +41,9 @@ const statusColors = {
   refunded: "bg-gray-100 text-gray-800",
 };
 
-const statusLabels = {
+const statusLabels: Record<string, string> = {
   pending: "قيد الانتظار",
+  confirmed: "مؤكد",
   processing: "قيد المعالجة",
   shipped: "تم الشحن",
   delivered: "تم التسليم",
