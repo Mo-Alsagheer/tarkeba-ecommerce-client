@@ -1,17 +1,21 @@
-'use client';
+"use client";
 
-import { useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useGoogleLoginMutation, useLazyGetProfileQuery, useRefreshTokenMutation } from '@/features/api/authApi';
-import { useAppDispatch } from '@/lib/hooks';
-import { setCredentials, updateAccessToken } from '@/features/auth/authSlice';
+import { useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  useGoogleLoginMutation,
+  useLazyGetProfileQuery,
+  useRefreshTokenMutation,
+} from "@/features/api/authApi";
+import { useAppDispatch } from "@/lib/hooks";
+import { setCredentials, updateAccessToken } from "@/features/auth/authSlice";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 
 function GoogleCallbackContent() {
   const router = useRouter();
@@ -22,48 +26,65 @@ function GoogleCallbackContent() {
   const [getProfile] = useLazyGetProfileQuery();
 
   useEffect(() => {
-    const code = searchParams.get('code');
-    const error = searchParams.get('error');
+    const code = searchParams.get("code");
+    const tokenFromUrl = searchParams.get("token");
+    const error = searchParams.get("error");
 
     if (error) {
-      router.push('/login?error=oauth_failed');
+      router.push("/login?error=oauth_failed");
       return;
     }
 
-    if (!code) {
-      router.push('/login');
+    if (!code && !tokenFromUrl) {
+      router.push("/login");
       return;
     }
 
     const handleGoogleCallback = async () => {
       try {
-        const result = await googleLogin({ code }).unwrap();
-        let user = result?.user;
+        const tokenFromUrl = searchParams.get("token");
 
-        // Some backends set cookies but don't always return token/user consistently.
-        // Prefer direct credentials when present; otherwise fall back to refresh + profile.
-        if (result?.accessToken && result?.user) {
-          dispatch(setCredentials(result));
-        } else {
-          const refreshed = await refreshToken().unwrap();
-          const token = refreshed?.accessToken;
-          if (!token) {
-            router.push('/login?error=oauth_failed');
-            return;
+        if (tokenFromUrl) {
+          // If we already have the token (redirected from backend)
+          dispatch(updateAccessToken(tokenFromUrl));
+          const user = await getProfile().unwrap();
+          dispatch(setCredentials({ user, accessToken: tokenFromUrl }));
+
+          if (user?.roles?.includes("admin")) {
+            router.push("/admin/dashboard");
+          } else {
+            router.push("/");
           }
-          dispatch(updateAccessToken(token));
-          user = await getProfile().unwrap();
-          dispatch(setCredentials({ user, accessToken: token }));
+          return;
         }
 
-        // Redirect admin users to dashboard
-        if (user?.roles?.includes('admin')) {
-          router.push('/admin/dashboard');
-        } else {
-          router.push('/');
+        // Fallback to code exchange if no token (legacy/alternative flow)
+        if (code) {
+          const result = await googleLogin({ code }).unwrap();
+          let user = result?.user;
+
+          if (result?.accessToken && result?.user) {
+            dispatch(setCredentials(result));
+          } else {
+            const refreshed = await refreshToken().unwrap();
+            const token = refreshed?.accessToken;
+            if (!token) {
+              router.push("/login?error=oauth_failed");
+              return;
+            }
+            dispatch(updateAccessToken(token));
+            user = await getProfile().unwrap();
+            dispatch(setCredentials({ user, accessToken: token }));
+          }
+
+          if (user?.roles?.includes("admin")) {
+            router.push("/admin/dashboard");
+          } else {
+            router.push("/");
+          }
         }
       } catch {
-        router.push('/login?error=oauth_failed');
+        router.push("/login?error=oauth_failed");
       }
     };
 
@@ -87,13 +108,15 @@ function GoogleCallbackContent() {
 
 export default function GoogleCallbackPage() {
   return (
-    <Suspense fallback={
-      <Card className="shadow-xl">
-        <CardContent className="p-12 text-center">
-          <div className="animate-pulse">جاري التحميل...</div>
-        </CardContent>
-      </Card>
-    }>
+    <Suspense
+      fallback={
+        <Card className="shadow-xl">
+          <CardContent className="p-12 text-center">
+            <div className="animate-pulse">جاري التحميل...</div>
+          </CardContent>
+        </Card>
+      }
+    >
       <GoogleCallbackContent />
     </Suspense>
   );
