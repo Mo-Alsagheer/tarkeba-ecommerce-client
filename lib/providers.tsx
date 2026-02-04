@@ -6,14 +6,14 @@ import { Toaster } from '@/components/ui/sonner';
 import { makeStore, AppStore } from './store';
 
 export function ReduxProvider({ children }: { children: React.ReactNode }) {
-  const storeRef = useRef<AppStore>();
+  const storeRef = useRef<AppStore | null>(null);
   
   if (!storeRef.current) {
     storeRef.current = makeStore();
   }
 
   return (
-    <Provider store={storeRef.current}>
+    <Provider store={storeRef.current!}>
       {children}
       <Toaster position="top-center" richColors />
     </Provider>

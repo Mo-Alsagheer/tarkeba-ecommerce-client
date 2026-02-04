@@ -200,7 +200,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               priority
             />
             {product.isFeatured && (
-              <Badge className="absolute top-4 right-4">{LABELS.PRODUCT.FEATURED}</Badge>
+              <Badge className="absolute top-4 right-4">{LABELS.PRODUCT_DETAIL.FEATURED}</Badge>
             )}
           </div>
           

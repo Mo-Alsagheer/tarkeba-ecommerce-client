@@ -55,6 +55,8 @@ export default function UsersPage() {
   const users = data?.users || [];
   const totalPages = data?.pages || 1;
   console.log(data);
+  const totalPages = data?.pagination?.pages || 1;
+
   const startEdit = (user: AdminUser) => {
     setEditingId(user._id);
     setSelectedRoles([...user.roles]);
@@ -145,6 +147,7 @@ export default function UsersPage() {
         </div>
         <div className="text-sm text-muted-foreground">
           إجمالي المستخدمين: {users?.length || 0}
+          إجمالي المستخدمين: {data?.pagination?.total || 0}
         </div>
       </div>
 

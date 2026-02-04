@@ -125,6 +125,12 @@ export interface UsersResponse {
   };
 }
 
+export interface AdminUsersQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
 const adminApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Legacy stats endpoint (keeping for backward compatibility)
@@ -162,18 +168,15 @@ const adminApi = baseApi.injectEndpoints({
       query: () => "/admin/analytics/order-status",
       providesTags: ["Orders"],
     }),
-
-    getAdminUsers: builder.query<
-      UsersResponse,
-      { page?: number; limit?: number; search?: string }
-    >({
+    
+    getAdminUsers: builder.query<UsersResponse, AdminUsersQueryParams>({
       query: ({ page = 1, limit = 10, search }) => {
         const params = new URLSearchParams({
           page: page.toString(),
           limit: limit.toString(),
         });
         if (search) {
-          params.append("search", search);
+          params.set('search', search);
         }
         return `/admin/users?${params}`;
       },
