@@ -56,6 +56,8 @@ export const makeStore = () => {
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware()
         .prepend(authListenerMiddleware.middleware, cartListenerMiddleware.middleware)
+        .concat(baseApi.middleware),
+  });
 
   setupListeners(store.dispatch);
   return store;
