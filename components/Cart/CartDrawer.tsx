@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Trash2, Plus, Minus, X, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { TITLES, BUTTONS, LABELS, DESCRIPTIONS, MESSAGES } from "@/constants";
+import { TITLES, BUTTONS, LABELS, DESCRIPTIONS } from "@/constants";
 
 interface CartDrawerProps {
     open: boolean;
@@ -48,6 +48,11 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
     const handleCheckout = () => {
         onOpenChange(false);
         router.push("/checkout");
+    };
+
+    const handleProductClick = (productId: string) => {
+        onOpenChange(false);
+        router.push(`/products/${productId}`);
     };
 
     if (items.length === 0) {
@@ -112,7 +117,10 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                 <div className="flex-1 overflow-y-auto py-4 space-y-4">
                     {items.map((item) => (
                         <div key={item.productId} className="flex gap-4">
-                            <div className="relative h-20 w-20 rounded-md overflow-hidden bg-muted">
+                            <div 
+                                className="relative h-20 w-20 rounded-md overflow-hidden bg-muted cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => handleProductClick(item.productId)}
+                            >
                                 <Image
                                     src={item.image}
                                     alt={item.name}
@@ -122,7 +130,10 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                             </div>
 
                             <div className="flex-1 space-y-2">
-                                <h4 className="font-medium text-sm line-clamp-1">
+                                <h4 
+                                    className="font-medium text-sm line-clamp-1 cursor-pointer hover:text-primary transition-colors"
+                                    onClick={() => handleProductClick(item.productId)}
+                                >
                                     {item.name}
                                 </h4>
                                 <p className="text-sm font-semibold">

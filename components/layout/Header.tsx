@@ -17,6 +17,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { useState, useEffect, useRef } from 'react';
 import { CartDrawer } from '@/components/Cart/CartDrawer';
 import { cn } from '@/lib/utils';
@@ -30,6 +37,7 @@ export function Header() {
   const cartItemsCount = useAppSelector(selectCartTotalItems);
   const [logoutMutation] = useLogoutMutation();
   const [cartOpen, setCartOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
@@ -178,9 +186,54 @@ export function Header() {
             )}
 
             {/* Mobile Menu */}
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right">
+                <SheetHeader>
+                  <SheetTitle className="text-right">القائمة</SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col gap-4 mt-6">
+                  <Link
+                    href="/"
+                    className="flex justify-center mb-4"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Image
+                      src="/logo.png"
+                      alt="تاركيبة"
+                      width={80}
+                      height={80}
+                      className="rounded-full"
+                    />
+                  </Link>
+                  <Link
+                    href="/products"
+                    className="text-lg font-medium hover:text-primary transition-colors text-right"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    المنتجات
+                  </Link>
+                  <Link
+                    href="/categories"
+                    className="text-lg font-medium hover:text-primary transition-colors text-right"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    الفئات
+                  </Link>
+                  <Link
+                    href="/about-us"
+                    className="text-lg font-medium hover:text-primary transition-colors text-right"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    من نحن
+                  </Link>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>

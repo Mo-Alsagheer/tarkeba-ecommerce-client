@@ -10,7 +10,7 @@ export interface CartItem {
   stock: number;
 }
 
-interface CartState {
+export interface CartState {
   items: CartItem[];
   totalItems: number;
   totalPrice: number;
@@ -84,6 +84,13 @@ const cartSlice = createSlice({
     removeCoupon: (state) => {
       state.appliedCoupon = null;
     },
+
+    setCart: (state, action: PayloadAction<CartState>) => {
+      state.items = action.payload.items;
+      state.totalItems = action.payload.totalItems;
+      state.totalPrice = action.payload.totalPrice;
+      state.appliedCoupon = action.payload.appliedCoupon;
+    },
   },
 });
 
@@ -94,6 +101,7 @@ export const {
   clearCart,
   applyCoupon,
   removeCoupon,
+  setCart,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

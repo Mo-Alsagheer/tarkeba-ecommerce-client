@@ -7,14 +7,14 @@ export function Footer() {
   return (
     <footer className="mt-auto border-t bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-right">
           {/* About */}
           <div>
             <h3 className="text-lg font-semibold mb-4">{DESCRIPTIONS.FOOTER.ABOUT_TARKEBA_TITLE}</h3>
             <p className="text-sm text-muted-foreground">
              {DESCRIPTIONS.FOOTER.ABOUT_TARKEBA}
             </p>
-            <div className="flex gap-4 mt-4">
+            <div className="flex gap-4 mt-4 justify-center md:justify-start">
               <Link href="https://www.instagram.com/tarkeba_perfume/" target="_blank" className="text-muted-foreground hover:text-primary transition-colors">
                 <Instagram className="h-5 w-5" />
               </Link>

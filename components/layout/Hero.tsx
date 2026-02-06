@@ -7,10 +7,10 @@ export function Hero() {
   return (
     <section className="bg-[#E5E5E5] overflow-hidden pt-28 pb-12 md:pt-32 md:pb-24">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="flex md:flex-col flex-col-reverse md:flex-row items-center justify-between gap-8">
           
           {/* Text Content - Right Side in RTL */}
-          <div className="flex-1 space-y-6 text-right z-10">
+          <div className="flex-1 space-y-6 text-center md:text-right z-10">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight text-black leading-[1.1]">
               اكتشف سحر
               <br />
