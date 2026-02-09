@@ -75,8 +75,7 @@ function GoogleCallbackContent() {
               return;
             }
             dispatch(updateAccessToken(token));
-            await createSession(token
-            dispatch(updateAccessToken(token));
+            await createSession(token);
             user = await getProfile().unwrap();
             dispatch(setCredentials({ user, accessToken: token }));
           }
