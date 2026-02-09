@@ -213,13 +213,13 @@ export default function ProductsPage() {
                                     <SelectItem value="default">
                                         {PLACEHOLDERS.SORT.DEFAULT}
                                     </SelectItem>
-                                    <SelectItem value="variants.price">
+                                    <SelectItem value="price">
                                         {PLACEHOLDERS.SORT.PRICE_LOW_TO_HIGH}
                                     </SelectItem>
-                                    <SelectItem value="-variants.price">
+                                    <SelectItem value="-price">
                                         {PLACEHOLDERS.SORT.PRICE_HIGH_TO_LOW}
                                     </SelectItem>
-                                    <SelectItem value="-_id">
+                                    <SelectItem value="-createdAt">
                                         {PLACEHOLDERS.SORT.NEWEST}
                                     </SelectItem>
                                     <SelectItem value="-averageRating">
