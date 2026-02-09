@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { TITLES, DESCRIPTIONS, LABELS, PLACEHOLDERS, MESSAGES } from "@/constants";
+import { TITLES, DESCRIPTIONS, LABELS, PLACEHOLDERS } from "@/constants";
 import {
     Select,
     SelectContent,
@@ -59,10 +59,13 @@ export default function ProductsPage() {
     const availableSizes = ["30ml", "50ml", "75ml", "100ml", "150ml"];
 
     const { data: categoriesData } = useGetCategoriesQuery();
+    
+    // Check if we are filtering by category on the server side
+    const serverCategoryFilter = selectedCategories.length > 0 ? selectedCategories[0] : undefined;
+    
     const { data, isLoading } = useGetProductsQuery({
         search: debouncedSearch,
-        category:
-            selectedCategories.length > 0 ? selectedCategories[0] : undefined,
+        category: serverCategoryFilter,
         minPrice: priceRange[0],
         maxPrice: priceRange[1],
         sort: sort === "default" ? undefined : sort,
@@ -237,7 +240,9 @@ export default function ProductsPage() {
                                 {data.products
                                     .filter((product) => {
                                         // Filter by categories if selected
-                                        if (selectedCategories.length > 0) {
+                                        // Only apply client-side filtering if NOT already filtered by server
+                                        // We check serverCategoryFilter because if it's set, the API only returns matching products anyway
+                                        if (selectedCategories.length > 0 && !serverCategoryFilter) {
                                             const productCategories = product.categories || [];
                                             // Fallback for legacy data structure
                                             if (product.category) {
