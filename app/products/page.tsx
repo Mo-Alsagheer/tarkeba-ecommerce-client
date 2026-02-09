@@ -36,6 +36,7 @@ export default function ProductsPage() {
     );
     const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
     const [priceRange, setPriceRange] = useState([0, 5000]);
+    const [debouncedPriceRange, setDebouncedPriceRange] = useState([0, 5000]);
     const [sort, setSort] = useState("default");
     const [page, setPage] = useState(1);
 
@@ -51,6 +52,18 @@ export default function ProductsPage() {
         return () => clearTimeout(timer);
     }, [search, debouncedSearch]);
 
+    // Handle price range debounce
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedPriceRange(priceRange);
+            if (priceRange[0] !== debouncedPriceRange[0] || priceRange[1] !== debouncedPriceRange[1]) {
+                setPage(1);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [priceRange, debouncedPriceRange]);
+
     const availableSizes = ["30ml", "50ml", "75ml", "100ml", "150ml"];
 
     const { data: categoriesData } = useGetCategoriesQuery();
@@ -61,8 +74,8 @@ export default function ProductsPage() {
     const { data, isLoading } = useGetProductsQuery({
         search: debouncedSearch,
         category: serverCategoryFilter,
-        minPrice: priceRange[0],
-        maxPrice: priceRange[1],
+        minPrice: debouncedPriceRange[0],
+        maxPrice: debouncedPriceRange[1],
         sort: sort === "default" ? undefined : sort,
         page,
         limit: 15,
