@@ -6,7 +6,7 @@ import { useRefreshTokenMutation, useLazyGetProfileQuery } from '@/features/api/
 import { setCredentials, updateAccessToken } from '@/features/auth/authSlice';
 import { getStoredAccessToken, clearStoredAccessToken } from '@/lib/authStorage';
 import { DESCRIPTIONS } from '@/constants';
-import { getSession } from '@/app/actions/auth';
+import { getSession, deleteSession } from '@/app/actions/auth';
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
@@ -15,11 +15,7 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const initRef = useRef(false);
 
-  console.log('AuthInitializer component rendered, isInitialized:', isInitialized, 'initRef:', initRef.current);
-
   useEffect(() => {
-    console.log('AuthInitializer: useEffect triggered, initRef.current:', initRef.current);
-    
     // Prevent double initialization in React strict mode
     if (initRef.current) {
       console.log('AuthInitializer: Already initialized, skipping');
@@ -30,22 +26,34 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
     let mounted = true;
 
     const initializeAuth = async () => {
-      console.log('AuthInitializer: Starting auth initialization...');
+      
+      // 1. Try to get token from our HttpOnly cookie action
+      let cookieToken;
       try {
-        // 1. Try to get token from our HttpOnly cookie action
-        const cookieToken = await getSession();
-        
-        if (cookieToken && mounted) {
-          console.log('AuthInitializer: Found session cookie');
+        cookieToken = await getSession();
+      } catch (err) {
+        // Ignore read error
+      }
+      
+      if (cookieToken && mounted) {
+        console.log('AuthInitializer: Found session cookie');
+        try {
           dispatch(updateAccessToken(cookieToken));
           const user = await getProfile().unwrap();
           
           if (mounted) {
-             dispatch(setCredentials({ user, accessToken: cookieToken }));
-             return; // Success, we are done
+              dispatch(setCredentials({ user, accessToken: cookieToken }));
+              setIsInitialized(true);
+              return; // Success, we are done
           }
+        } catch (err) {
+          console.log('AuthInitializer: Session cookie invalid (401), clearing cookie...');
+          await deleteSession();
+          // Fall through to next steps (refresh token or local storage)
         }
+      }
 
+      try {
         // 2. Try to get a new access token using the backend HttpOnly cookie (refresh token)
         console.log('AuthInitializer: Calling refresh token...');
         const result = await refreshToken().unwrap();
