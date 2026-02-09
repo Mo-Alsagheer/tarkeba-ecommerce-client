@@ -31,18 +31,13 @@ export default function ProductsPage() {
 
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [selectedCategories, setSelectedCategories] = useState<string[]>(() =>
+        categoryFromUrl ? [categoryFromUrl] : []
+    );
     const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
     const [priceRange, setPriceRange] = useState([0, 5000]);
     const [sort, setSort] = useState("default");
     const [page, setPage] = useState(1);
-
-    // Set category from URL parameter
-    useEffect(() => {
-        if (categoryFromUrl && !selectedCategories.includes(categoryFromUrl)) {
-            setSelectedCategories([categoryFromUrl]);
-        }
-    }, [categoryFromUrl]);
 
     // Handle search debounce
     useEffect(() => {
@@ -54,7 +49,7 @@ export default function ProductsPage() {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [search]);
+    }, [search, debouncedSearch]);
 
     const availableSizes = ["30ml", "50ml", "75ml", "100ml", "150ml"];
 
