@@ -7,6 +7,7 @@ import { setCredentials, updateAccessToken } from '@/features/auth/authSlice';
 import { getStoredAccessToken, clearStoredAccessToken } from '@/lib/authStorage';
 import { DESCRIPTIONS } from '@/constants';
 import { getSession, deleteSession } from '@/app/actions/auth';
+import { isTokenExpired } from '@/lib/utils';
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
@@ -77,11 +78,18 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
         try {
           const storedToken = getStoredAccessToken();
           if (storedToken && mounted) {
-            console.log('AuthInitializer: Found stored token, attempting profile fetch...');
-            dispatch(updateAccessToken(storedToken));
-            const user = await getProfile().unwrap();
-            if (mounted) {
-              dispatch(setCredentials({ user, accessToken: storedToken }));
+            
+            // Check expiry before making request
+            if (isTokenExpired(storedToken)) {
+                console.log('AuthInitializer: Stored token is expired, clearing...');
+                clearStoredAccessToken();
+            } else {            
+                console.log('AuthInitializer: Found stored token, attempting profile fetch...');
+                dispatch(updateAccessToken(storedToken));
+                const user = await getProfile().unwrap();
+                if (mounted) {
+                  dispatch(setCredentials({ user, accessToken: storedToken }));
+                }
             }
           }
         } catch (fallbackError) {
