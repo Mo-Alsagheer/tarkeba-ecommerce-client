@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Mail, Lock, LogIn } from 'lucide-react';
+import { createSession } from '@/app/actions/auth';
 
 const loginSchema = z.object({
   email: z.string().email('البريد الإلكتروني غير صالح'),
@@ -41,6 +42,7 @@ export default function LoginPage() {
       setError(null);
       const result = await login(data).unwrap();
       dispatch(setCredentials(result));
+      await createSession(result.accessToken);
       
       // Redirect admin users to dashboard
       if (result.user.roles?.includes('admin')) {

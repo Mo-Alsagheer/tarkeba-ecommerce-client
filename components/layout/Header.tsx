@@ -27,6 +27,7 @@ import {
 import { useState, useEffect, useRef } from 'react';
 import { CartDrawer } from '@/components/Cart/CartDrawer';
 import { cn } from '@/lib/utils';
+import { deleteSession } from '@/app/actions/auth';
 
 export function Header() {
   const router = useRouter();
@@ -69,6 +70,7 @@ export function Header() {
     try {
       await logoutMutation().unwrap();
       dispatch(logout());
+      await deleteSession();
       router.push('/');
     } catch {
       // Handle error silently

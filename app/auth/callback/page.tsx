@@ -8,6 +8,7 @@ import { authApi } from '@/features/api/authApi';
 import { Loader2 } from 'lucide-react';
 import type { User } from '@/features/api/authApi';
 import { MESSAGES } from '@/constants';
+import { createSession } from '@/app/actions/auth';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function AuthCallbackPage() {
     if (token) {
       // Set token to enable authenticated requests
       dispatch(updateAccessToken(token));
+      createSession(token);
 
       // Fetch user profile
       dispatch(authApi.endpoints.getProfile.initiate(undefined))

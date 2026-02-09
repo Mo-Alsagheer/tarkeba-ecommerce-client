@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { createSession } from "@/app/actions/auth";
 
 function GoogleCallbackContent() {
   const router = useRouter();
@@ -47,6 +48,7 @@ function GoogleCallbackContent() {
         if (tokenFromUrl) {
           // If we already have the token (redirected from backend)
           dispatch(updateAccessToken(tokenFromUrl));
+          await createSession(tokenFromUrl);
           const user = await getProfile().unwrap();
           dispatch(setCredentials({ user, accessToken: tokenFromUrl }));
 
@@ -64,7 +66,7 @@ function GoogleCallbackContent() {
           let user = result?.user;
 
           if (result?.accessToken && result?.user) {
-            dispatch(setCredentials(result));
+            await createSession(result.accessToken);
           } else {
             const refreshed = await refreshToken().unwrap();
             const token = refreshed?.accessToken;
@@ -72,6 +74,8 @@ function GoogleCallbackContent() {
               router.push("/login?error=oauth_failed");
               return;
             }
+            dispatch(updateAccessToken(token));
+            await createSession(token
             dispatch(updateAccessToken(token));
             user = await getProfile().unwrap();
             dispatch(setCredentials({ user, accessToken: token }));

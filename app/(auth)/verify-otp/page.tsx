@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ShieldCheck } from 'lucide-react';
+import { createSession } from '@/app/actions/auth';
 
 function VerifyOtpContent() {
   const router = useRouter();
@@ -86,6 +87,7 @@ function VerifyOtpContent() {
       setError(null);
       const result = await verifyOtp({ email, otp: otpCode }).unwrap();
       dispatch(setCredentials(result));
+      await createSession(result.accessToken);
       
       // Redirect admin users to dashboard
       if (result.user.roles?.includes('admin')) {

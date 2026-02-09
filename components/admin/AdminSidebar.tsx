@@ -17,6 +17,7 @@ import { useAppDispatch } from '@/lib/hooks';
 import { logout } from '@/features/auth/authSlice';
 import { useRouter } from 'next/navigation';
 import { NAVIGATION, BUTTONS } from '@/constants';
+import { deleteSession } from '@/app/actions/auth';
 
 const navigation = [
   { name: NAVIGATION.ADMIN.DASHBOARD, href: '/admin/dashboard', icon: LayoutDashboard },
@@ -31,8 +32,9 @@ export default function AdminSidebar() {
   const dispatch = useAppDispatch();
   const router = useRouter();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     dispatch(logout());
+    await deleteSession();
     router.push('/');
   };
 

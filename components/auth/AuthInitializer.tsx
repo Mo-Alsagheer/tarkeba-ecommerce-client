@@ -6,6 +6,7 @@ import { useRefreshTokenMutation, useLazyGetProfileQuery } from '@/features/api/
 import { setCredentials, updateAccessToken } from '@/features/auth/authSlice';
 import { getStoredAccessToken, clearStoredAccessToken } from '@/lib/authStorage';
 import { DESCRIPTIONS } from '@/constants';
+import { getSession } from '@/app/actions/auth';
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
@@ -31,7 +32,21 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
     const initializeAuth = async () => {
       console.log('AuthInitializer: Starting auth initialization...');
       try {
-        // Try to get a new access token using the HttpOnly cookie
+        // 1. Try to get token from our HttpOnly cookie action
+        const cookieToken = await getSession();
+        
+        if (cookieToken && mounted) {
+          console.log('AuthInitializer: Found session cookie');
+          dispatch(updateAccessToken(cookieToken));
+          const user = await getProfile().unwrap();
+          
+          if (mounted) {
+             dispatch(setCredentials({ user, accessToken: cookieToken }));
+             return; // Success, we are done
+          }
+        }
+
+        // 2. Try to get a new access token using the backend HttpOnly cookie (refresh token)
         console.log('AuthInitializer: Calling refresh token...');
         const result = await refreshToken().unwrap();
         console.log('AuthInitializer: Refresh token result:', result);
