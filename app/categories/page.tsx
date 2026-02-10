@@ -18,24 +18,23 @@ export default function CategoriesPage() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="h-48 bg-muted animate-pulse rounded-lg" />
+            <div key={i} className="aspect-[3/4] bg-muted animate-pulse rounded-lg" />
           ))}
         </div>
       ) : categories && categories.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {categories
             .filter((category) => category.isActive !== false)
             .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
             .map((category) => (
-                console.log('Category:', category),
               <Link
                 key={category._id}
                 href={`/products?category=${category._id}`}
               >
                 <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full">
-                  <div className="relative h-40 bg-gradient-to-br from-primary/10 to-primary/5">
+                  <div className="relative aspect-[3/4] bg-gradient-to-br from-primary/10 to-primary/5">
                     {category.image ? (
                       <Image
                         src={category.image}
