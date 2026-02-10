@@ -33,7 +33,7 @@ export default function CategoriesPage() {
                 key={category._id}
                 href={`/products?category=${category._id}`}
               >
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full pt-0">
                   <div className="relative aspect-[3/4] bg-gradient-to-br from-primary/10 to-primary/5">
                     {category.image ? (
                       <Image
