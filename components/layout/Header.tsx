@@ -183,7 +183,7 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link href="/login">
+              <Link href="/login" className="hidden md:block">
                 <Button size="sm">تسجيل الدخول</Button>
               </Link>
             )}
