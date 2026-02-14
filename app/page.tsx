@@ -56,15 +56,17 @@ export default function Home() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="flex overflow-x-auto pb-4 gap-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-96 bg-muted animate-pulse rounded-lg" />
+              <div key={i} className="flex-none w-[85%] sm:w-auto snap-center h-96 bg-muted animate-pulse rounded-lg" />
             ))}
           </div>
         ) : products && products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="flex overflow-x-auto pb-4 gap-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
             {products.slice(0, 4).map((product: any) => (
-              <ProductCard key={product._id} product={product} />
+              <div key={product._id} className="flex-none w-[85%] sm:w-auto snap-center h-full">
+                <ProductCard product={product} />
+              </div>
             ))}
           </div>
         ) : (

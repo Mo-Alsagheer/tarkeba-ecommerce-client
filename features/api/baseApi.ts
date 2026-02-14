@@ -11,7 +11,7 @@ import { Mutex } from "async-mutex";
 const mutex = new Mutex();
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  baseUrl: "/api",
   credentials: "include", // Include cookies for refresh tokens
   prepareHeaders: (headers, { getState }) => {
     const stateToken = (getState() as RootState).auth?.accessToken;
