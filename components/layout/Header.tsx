@@ -3,11 +3,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
-import { ShoppingCart, User, LogOut, Search, Menu, Facebook, Instagram, Twitter } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Search, Menu, Facebook, Instagram, Twitter, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { selectIsAuthenticated, selectCurrentUser, logout } from '@/features/auth/authSlice';
 import { selectCartTotalItems } from '@/features/cart/cartSlice';
 import { useLogoutMutation } from '@/features/api/authApi';
+import { useGetCategoriesQuery } from '@/features/api/categoriesApi';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -38,6 +39,7 @@ export function Header() {
   const user = useAppSelector(selectCurrentUser);
   const cartItemsCount = useAppSelector(selectCartTotalItems);
   const [logoutMutation] = useLogoutMutation();
+  const { data: categories } = useGetCategoriesQuery();
   const [cartOpen, setCartOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -195,51 +197,64 @@ export function Header() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
+
               <SheetContent side="right">
                 <div className="flex flex-col mt-6 h-full">
-                  <div className="flex justify-center mb-2">
-                    <Link
-                      href="/"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Image
-                        src="/logo.png"
-                        alt="تركيبة"
-                        width={110}
-                        height={110}
-                        className="rounded-full"
-                      />
-                    </Link>
-                  </div>
-
-                  <Separator />
-
-                  
-
-                  <Separator />
 
                   <div className="flex flex-col py-4 gap-2">
                     <Link
-                      href="/products"
+                      href="/products?sort=-createdAt"
                       className="text-lg font-medium hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md transition-colors text-right"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      المنتجات
+                      جديدنا
                     </Link>
                     <Link
-                      href="/categories"
+                      href="/products?sort=best-selling"
                       className="text-lg font-medium hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md transition-colors text-right"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      الفئات
+                      الأكثر مبيعا
                     </Link>
-                    <Link
-                      href="/about-us"
-                      className="text-lg font-medium hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md transition-colors text-right"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      من نحن
-                    </Link>
+                    
+                    <div className="flex flex-col">
+                      <div className="text-lg font-medium px-4 py-2 text-right w-full">
+                        العطور
+                      </div>
+                      
+                      <div className="flex flex-col gap-1 mr-4 border-r pr-2 mt-1">
+                          {categories?.filter(c => c.slug == 'men-perfumes').map(cat => (
+                             <Link
+                              key={cat._id}
+                              href={`/products?category=${cat._id}`}
+                              className="text-base font-medium text-primary px-4 py-1.5 rounded-md transition-colors text-right"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              رجالي
+                            </Link>
+                          ))}
+                          {categories?.filter(c => c.slug.includes('women-perfumes')).map(cat => (
+                             <Link
+                              key={cat._id}
+                              href={`/products?category=${cat._id}`}
+                              className="text-base font-medium text-primary px-4 py-1.5 rounded-md transition-colors text-right"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              نسائي
+                            </Link>
+                          ))}
+                           {categories?.filter(c => c.slug.includes('unisex-perfumes')).map(cat => (
+                             <Link
+                              key={cat._id}
+                              href={`/products?category=${cat._id}`}
+                              className="text-base font-medium text-primary px-4 py-1.5 rounded-md transition-colors text-right"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              للجنسين
+                            </Link>
+                          ))}
+                      </div>
+                    </div>
                   </div>
 
                   

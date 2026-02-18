@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi } from "./baseApi";
 
 interface CreateReviewRequest {
   productId: string;
@@ -9,17 +9,21 @@ interface CreateReviewRequest {
 
 interface Review {
   _id: string;
-  productId: {
-    _id: string;
-    name: string;
-    slug?: string;
-    images: string[];
-  } | string;
-  userId: {
-    _id: string;
-    username: string;
-    email: string;
-  } | string;
+  productId:
+    | {
+        _id: string;
+        name: string;
+        slug?: string;
+        images: string[];
+      }
+    | string;
+  userId:
+    | {
+        _id: string;
+        username: string;
+        email: string;
+      }
+    | string;
   orderId: string;
   rating: number;
   comment: string;
@@ -42,7 +46,7 @@ interface GetReviewsParams {
   status?: string;
   rating?: number;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 interface GetReviewsResponse {
@@ -67,32 +71,31 @@ interface GetReviewsResponse {
 }
 
 export const reviewsApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getProductReviews: builder.query<GetReviewsResponse, GetReviewsParams>({
       query: (params) => ({
-        url: '/reviews',
+        url: "/reviews",
         params,
       }),
       providesTags: (result, error, params) => [
-        { type: 'Reviews', id: params.productId || 'LIST' },
+        { type: "Reviews", id: params.productId || "LIST" },
       ],
     }),
     createReview: builder.mutation<CreateReviewResponse, CreateReviewRequest>({
       query: (reviewData) => ({
-        url: '/reviews',
-        method: 'POST',
+        url: "/reviews",
+        method: "POST",
         body: reviewData,
       }),
       invalidatesTags: (result, error, arg) => [
-        { type: 'Reviews', id: arg.productId },
-        { type: 'Reviews', id: 'LIST' },
-        'Products',
+        { type: "Reviews", id: arg.productId },
+        { type: "Reviews", id: "LIST" },
+        "Products",
       ],
     }),
   }),
 });
 
-export const {
-  useGetProductReviewsQuery,
-  useCreateReviewMutation,
-} = reviewsApi;
+export const { useGetProductReviewsQuery, useCreateReviewMutation } =
+  reviewsApi;

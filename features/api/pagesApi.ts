@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi } from "./baseApi";
 
 interface PageContent {
   _id: string;
@@ -29,37 +29,38 @@ interface UpdatePageRequest extends Partial<CreatePageRequest> {
 }
 
 export const pagesApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getPages: builder.query<GetPagesResponse, void>({
-      query: () => '/pages',
-      providesTags: ['Pages'],
+      query: () => "/pages",
+      providesTags: ["Pages"],
     }),
     getPageBySlug: builder.query<PageContent, string>({
       query: (slug) => `/pages/${slug}`,
-      providesTags: (result, error, slug) => [{ type: 'Pages', id: slug }],
+      providesTags: (result, error, slug) => [{ type: "Pages", id: slug }],
     }),
     createPage: builder.mutation<{ page: PageContent }, CreatePageRequest>({
       query: (pageData) => ({
-        url: '/pages',
-        method: 'POST',
+        url: "/pages",
+        method: "POST",
         body: pageData,
       }),
-      invalidatesTags: ['Pages'],
+      invalidatesTags: ["Pages"],
     }),
     updatePage: builder.mutation<{ page: PageContent }, UpdatePageRequest>({
       query: ({ _id, ...pageData }) => ({
         url: `/pages/${_id}`,
-        method: 'PATCH',
+        method: "PATCH",
         body: pageData,
       }),
-      invalidatesTags: ['Pages'],
+      invalidatesTags: ["Pages"],
     }),
     deletePage: builder.mutation<void, string>({
       query: (id) => ({
         url: `/pages/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: ['Pages'],
+      invalidatesTags: ["Pages"],
     }),
   }),
 });

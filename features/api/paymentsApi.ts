@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi } from "./baseApi";
 
 export interface PaymentMethod {
   value: string;
@@ -23,20 +23,26 @@ export interface CreatePaymentResponse {
 }
 
 export const paymentsApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getPaymentMethods: builder.query<PaymentMethod[], void>({
-      query: () => '/payments/methods',
+      query: () => "/payments/methods",
     }),
 
-    createPayment: builder.mutation<CreatePaymentResponse, CreatePaymentRequest>({
+    createPayment: builder.mutation<
+      CreatePaymentResponse,
+      CreatePaymentRequest
+    >({
       query: (body) => ({
-        url: '/payments',
-        method: 'POST',
+        url: "/payments",
+        method: "POST",
         body,
       }),
-      transformResponse: (response: unknown) => response as CreatePaymentResponse,
+      transformResponse: (response: unknown) =>
+        response as CreatePaymentResponse,
     }),
   }),
 });
 
-export const { useGetPaymentMethodsQuery, useCreatePaymentMutation } = paymentsApi;
+export const { useGetPaymentMethodsQuery, useCreatePaymentMutation } =
+  paymentsApi;

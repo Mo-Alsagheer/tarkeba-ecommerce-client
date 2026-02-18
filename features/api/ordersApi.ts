@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi } from "./baseApi";
 
 export interface CheckoutCartItem {
   productID: string;
@@ -79,8 +79,15 @@ export interface Order {
     email: string;
   };
   email?: string;
-  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  status:
+    | "pending"
+    | "confirmed"
+    | "processing"
+    | "shipped"
+    | "delivered"
+    | "cancelled"
+    | "refunded";
+  paymentStatus: "pending" | "paid" | "failed" | "refunded";
   subtotal: number;
   taxAmount: number;
   shippingAmount: number;
@@ -119,19 +126,26 @@ export interface OrdersResponse {
 
 export interface UpdateOrderStatusRequest {
   orderId: string;
-  status: Order['status'];
+  status: Order["status"];
 }
 
 const ordersApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     // Customer endpoints
-    getMyOrders: builder.query<OrdersResponse, { page?: number; limit?: number }>({
-      query: ({ page = 1, limit = 10 }) => `/orders/my?page=${page}&limit=${limit}`,
+    getMyOrders: builder.query<
+      OrdersResponse,
+      { page?: number; limit?: number }
+    >({
+      query: ({ page = 1, limit = 10 }) =>
+        `/orders/my?page=${page}&limit=${limit}`,
       transformResponse: (response: any) => {
         // Handle different response formats
         if (response?.data) {
           return {
-            orders: Array.isArray(response.data.orders) ? response.data.orders : [],
+            orders: Array.isArray(response.data.orders)
+              ? response.data.orders
+              : [],
             total: response.data.total || 0,
             page: response.data.page || 1,
             limit: response.data.limit || 10,
@@ -155,49 +169,64 @@ const ordersApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.orders.map(({ _id }) => ({ type: 'Orders' as const, id: _id })),
-              { type: 'Orders', id: 'LIST' },
+              ...result.orders.map(({ _id }) => ({
+                type: "Orders" as const,
+                id: _id,
+              })),
+              { type: "Orders", id: "LIST" },
             ]
-          : [{ type: 'Orders', id: 'LIST' }],
-    }),
-    
-    getMyOrderById: builder.query<{ order: Order; items: OrderItem[] }, string>({
-      query: (id) => `/orders/${id}`,
-      transformResponse: (response: any) => {
-        if (response?.data) return response.data;
-        return response;
-      },
-      providesTags: (result, error, id) => [{ type: 'Orders', id }],
+          : [{ type: "Orders", id: "LIST" }],
     }),
 
+    getMyOrderById: builder.query<{ order: Order; items: OrderItem[] }, string>(
+      {
+        query: (id) => `/orders/${id}`,
+        transformResponse: (response: any) => {
+          if (response?.data) return response.data;
+          return response;
+        },
+        providesTags: (result, error, id) => [{ type: "Orders", id }],
+      },
+    ),
+
     // Check if user has purchased a specific product
-    hasUserPurchasedProduct: builder.query<{ hasPurchased: boolean; orderId?: string }, string>({
+    hasUserPurchasedProduct: builder.query<
+      { hasPurchased: boolean; orderId?: string },
+      string
+    >({
       query: (productId) => `/orders/check-purchase/${productId}`,
-      providesTags: (_result, _error, productId) => [{ type: 'Orders', id: `PURCHASE-${productId}` }],
+      providesTags: (_result, _error, productId) => [
+        { type: "Orders", id: `PURCHASE-${productId}` },
+      ],
     }),
-    
+
     // Admin endpoints
-    adminGetOrders: builder.query<OrdersResponse, { 
-      page?: number; 
-      limit?: number; 
-      status?: Order['status'];
-      search?: string;
-    }>({
+    adminGetOrders: builder.query<
+      OrdersResponse,
+      {
+        page?: number;
+        limit?: number;
+        status?: Order["status"];
+        search?: string;
+      }
+    >({
       query: ({ page = 1, limit = 10, status, search }) => {
         const params = new URLSearchParams({
           page: page.toString(),
           limit: limit.toString(),
         });
-        if (status) params.append('status', status);
-        if (search) params.append('search', search);
+        if (status) params.append("status", status);
+        if (search) params.append("search", search);
         return `/admin/orders?${params.toString()}`;
       },
       transformResponse: (response: any) => {
-        console.log('Admin orders response:', response);
+        console.log("Admin orders response:", response);
         // Handle different response formats from NestJS
         if (response?.data) {
           return {
-            orders: Array.isArray(response.data.orders) ? response.data.orders : [],
+            orders: Array.isArray(response.data.orders)
+              ? response.data.orders
+              : [],
             total: response.data.total || 0,
             page: response.data.page || 1,
             limit: response.data.limit || 10,
@@ -223,26 +252,32 @@ const ordersApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.orders.map(({ _id }) => ({ type: 'Orders' as const, id: _id })),
-              { type: 'Orders', id: 'ADMIN_LIST' },
+              ...result.orders.map(({ _id }) => ({
+                type: "Orders" as const,
+                id: _id,
+              })),
+              { type: "Orders", id: "ADMIN_LIST" },
             ]
-          : [{ type: 'Orders', id: 'ADMIN_LIST' }],
+          : [{ type: "Orders", id: "ADMIN_LIST" }],
     }),
-    
-    adminGetOrderById: builder.query<{ order: Order; items: OrderItem[] }, string>({
+
+    adminGetOrderById: builder.query<
+      { order: Order; items: OrderItem[] },
+      string
+    >({
       query: (id) => `/admin/orders/${id}`,
       transformResponse: (response: any) => {
         // Handle wrapped response {order, items}
         if (response?.data) return response.data;
         return response;
       },
-      providesTags: (result, error, id) => [{ type: 'Orders', id }],
+      providesTags: (result, error, id) => [{ type: "Orders", id }],
     }),
-    
+
     adminUpdateOrderStatus: builder.mutation<Order, UpdateOrderStatusRequest>({
       query: ({ orderId, status }) => ({
         url: `/admin/orders/${orderId}/status`,
-        method: 'PATCH',
+        method: "PATCH",
         body: { status },
       }),
       transformResponse: (response: any) => {
@@ -251,19 +286,19 @@ const ordersApi = baseApi.injectEndpoints({
         return response;
       },
       invalidatesTags: (result, error, { orderId }) => [
-        { type: 'Orders', id: orderId },
-        { type: 'Orders', id: 'ADMIN_LIST' },
-        'Orders',
+        { type: "Orders", id: orderId },
+        { type: "Orders", id: "ADMIN_LIST" },
+        "Orders",
       ],
     }),
 
     checkout: builder.mutation<CheckoutResponse, CheckoutRequest>({
       query: (checkoutData) => ({
-        url: '/orders/checkout',
-        method: 'POST',
+        url: "/orders/checkout",
+        method: "POST",
         body: checkoutData,
       }),
-      invalidatesTags: [{ type: 'Orders', id: 'LIST' }],
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
     }),
   }),
 });

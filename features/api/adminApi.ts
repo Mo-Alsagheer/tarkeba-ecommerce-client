@@ -133,6 +133,7 @@ export interface AdminUsersQueryParams {
 }
 
 const adminApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     // Legacy stats endpoint (keeping for backward compatibility)
     getAdminStats: builder.query<AdminStats, void>({
@@ -169,7 +170,7 @@ const adminApi = baseApi.injectEndpoints({
       query: () => "/admin/analytics/order-status",
       providesTags: ["Orders"],
     }),
-    
+
     getAdminUsers: builder.query<UsersResponse, AdminUsersQueryParams>({
       query: ({ page = 1, limit = 10, search }) => {
         const params = new URLSearchParams({
@@ -177,7 +178,7 @@ const adminApi = baseApi.injectEndpoints({
           limit: limit.toString(),
         });
         if (search) {
-          params.set('search', search);
+          params.set("search", search);
         }
         return `/admin/users?${params}`;
       },
