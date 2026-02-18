@@ -1,28 +1,40 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useRegisterMutation } from '@/features/api/authApi';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Mail, Lock, User, Phone, UserPlus } from 'lucide-react';
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useRegisterMutation } from "@/features/api/authApi";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Mail, Lock, User, Phone, UserPlus } from "lucide-react";
 
-const registerSchema = z.object({
-  name: z.string().min(2, 'الاسم يجب أن يكون حرفين على الأقل'),
-  email: z.string().email('البريد الإلكتروني غير صالح'),
-  password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
-  confirmPassword: z.string(),
-  phone: z.string().optional(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'كلمات المرور غير متطابقة',
-  path: ['confirmPassword'],
-});
+const registerSchema = z
+  .object({
+    username: z
+      .string()
+      .min(2, "الاسم يجب أن يكون حرفين على الأقل")
+      .max(50, "الاسم يجب أن لا يتجاوز 50 حرفاً"),
+    email: z.string().email("البريد الإلكتروني غير صالح"),
+    password: z
+      .string()
+      .min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل")
+      .max(128, "كلمة المرور يجب أن لا تتجاوز 128 حرفاً")
+      .regex(
+        /^(?=.*[a-zA-Z])(?=.*\d).+/,
+        "كلمة المرور يجب أن تحتوي على حرف وأرقام على الأقل",
+      ),
+    confirmPassword: z.string(),
+    phone: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "كلمات المرور غير متطابقة",
+    path: ["confirmPassword"],
+  });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -35,9 +47,10 @@ export default function RegisterPage() {
   const {
     register: registerField,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
+    mode: "onChange",
   });
 
   const onSubmit = async (data: RegisterFormValues) => {
@@ -52,7 +65,9 @@ export default function RegisterPage() {
       }, 2000);
     } catch (err) {
       const error = err as { data?: { message?: string } };
-      setError(error?.data?.message || 'فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.');
+      setError(
+        error?.data?.message || "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.",
+      );
     }
   };
 
@@ -116,12 +131,14 @@ export default function RegisterPage() {
               type="text"
               placeholder="محمد أحمد"
               className="ps-10"
-              {...registerField('name')}
+              {...registerField("username")}
               disabled={isLoading}
             />
           </div>
-          {errors.name && (
-            <p className="text-xs text-destructive">{errors.name.message}</p>
+          {errors.username && (
+            <p className="text-xs text-destructive">
+              {errors.username.message}
+            </p>
           )}
         </div>
 
@@ -134,7 +151,7 @@ export default function RegisterPage() {
               type="email"
               placeholder="name@example.com"
               className="ps-10"
-              {...registerField('email')}
+              {...registerField("email")}
               disabled={isLoading}
             />
           </div>
@@ -152,7 +169,7 @@ export default function RegisterPage() {
               type="tel"
               placeholder="+20 XXX XXX XXXX"
               className="ps-10"
-              {...registerField('phone')}
+              {...registerField("phone")}
               disabled={isLoading}
             />
           </div>
@@ -170,12 +187,14 @@ export default function RegisterPage() {
               type="password"
               placeholder="••••••••"
               className="ps-10"
-              {...registerField('password')}
+              {...registerField("password")}
               disabled={isLoading}
             />
           </div>
           {errors.password && (
-            <p className="text-xs text-destructive">{errors.password.message}</p>
+            <p className="text-xs text-destructive">
+              {errors.password.message}
+            </p>
           )}
         </div>
 
@@ -188,18 +207,24 @@ export default function RegisterPage() {
               type="password"
               placeholder="••••••••"
               className="ps-10"
-              {...registerField('confirmPassword')}
+              {...registerField("confirmPassword")}
               disabled={isLoading}
             />
           </div>
           {errors.confirmPassword && (
-            <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
+            <p className="text-xs text-destructive">
+              {errors.confirmPassword.message}
+            </p>
           )}
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isLoading || !isValid}
+        >
           {isLoading ? (
-            'جاري إنشاء الحساب...'
+            "جاري إنشاء الحساب..."
           ) : (
             <>
               <UserPlus className="ms-2 h-4 w-4" />
@@ -211,8 +236,11 @@ export default function RegisterPage() {
 
       <div className="flex justify-center">
         <p className="text-sm text-muted-foreground">
-          لديك حساب بالفعل؟{' '}
-          <Link href="/login" className="text-primary hover:underline font-medium">
+          لديك حساب بالفعل؟{" "}
+          <Link
+            href="/login"
+            className="text-primary hover:underline font-medium"
+          >
             تسجيل الدخول
           </Link>
         </p>
