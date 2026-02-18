@@ -57,8 +57,8 @@ export default function RegisterPage() {
     try {
       setError(null);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { confirmPassword, ...registerData } = data;
-      await register(registerData).unwrap();
+      const { confirmPassword, username, ...rest } = data;
+      await register({ ...rest, name: username }).unwrap();
       setSuccess(true);
       setTimeout(() => {
         router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
