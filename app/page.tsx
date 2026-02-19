@@ -1,45 +1,56 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { ProductCard } from '@/components/products/ProductCard';
-import { Hero } from '@/components/layout/Hero';
-import { useGetFeaturedProductsQuery, useGetProductsQuery } from '@/features/api/productsApi';
-import { useGetCategoriesQuery } from '@/features/api/categoriesApi';
-import { ArrowLeft, Sparkles } from 'lucide-react';
-import { TITLES, DESCRIPTIONS, BUTTONS, MESSAGES } from '@/constants';
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { ProductCard } from "@/components/products/ProductCard";
+import { Hero } from "@/components/layout/Hero";
+import {
+  useGetFeaturedProductsQuery,
+  useGetProductsQuery,
+} from "@/features/api/productsApi";
+import { useGetCategoriesQuery } from "@/features/api/categoriesApi";
+import { ArrowLeft, Sparkles } from "lucide-react";
+import { TITLES, DESCRIPTIONS, BUTTONS, MESSAGES } from "@/constants";
 
 export default function Home() {
   const { data: categories } = useGetCategoriesQuery();
-  const { data: featuredProducts, isLoading: isFeaturedLoading } = useGetFeaturedProductsQuery();
-  
+  const { data: featuredProducts, isLoading: isFeaturedLoading } =
+    useGetFeaturedProductsQuery();
 
-  console.log('Featured products:', featuredProducts);
-  
+  console.log("Featured products:", featuredProducts);
+
   // Find category IDs by slug
-  const menCategory = categories?.find(cat => cat.slug === 'men-perfumes');
-  const womenCategory = categories?.find(cat => cat.slug === 'women-perfumes');
-  
-  console.log('Men category:', menCategory);
-  console.log('Women category:', womenCategory);
-  
+  const menCategory = categories?.find((cat) => cat.slug === "men-perfumes");
+  const womenCategory = categories?.find(
+    (cat) => cat.slug === "women-perfumes",
+  );
+
+  console.log("Men category:", menCategory);
+  console.log("Women category:", womenCategory);
+
   const { data: menData, isLoading: isMenLoading } = useGetProductsQuery(
     menCategory ? { category: menCategory._id, limit: 4 } : undefined,
-    { skip: !menCategory }
+    { skip: !menCategory },
   );
   const { data: womenData, isLoading: isWomenLoading } = useGetProductsQuery(
     womenCategory ? { category: womenCategory._id, limit: 4 } : undefined,
-    { skip: !womenCategory }
+    { skip: !womenCategory },
   );
 
-  console.log('Men products data:', menData);
-  console.log('Women products data:', womenData);
+  console.log("Men products data:", menData);
+  console.log("Women products data:", womenData);
 
   const menProducts = menData?.products || [];
   const womenProducts = womenData?.products || [];
 
-  const renderProductSection = (title: string, subtitle: string, products: any[], isLoading: boolean, link: string) => (
+  const renderProductSection = (
+    title: string,
+    subtitle: string,
+    products: any[],
+    isLoading: boolean,
+    link: string,
+  ) => (
     <section className="py-16">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
@@ -56,22 +67,30 @@ export default function Home() {
         </div>
 
         {isLoading ? (
-          <div className="flex overflow-x-auto pb-4 gap-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex items-stretch overflow-x-auto pb-4 gap-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex-none w-[85%] sm:w-auto snap-center h-96 bg-muted animate-pulse rounded-lg" />
+              <div
+                key={i}
+                className="flex-none w-[85%] sm:w-auto snap-center h-96 bg-muted animate-pulse rounded-lg"
+              />
             ))}
           </div>
         ) : products && products.length > 0 ? (
-          <div className="flex overflow-x-auto pb-4 gap-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex items-stretch overflow-x-auto pb-4 gap-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
             {products.slice(0, 4).map((product: any) => (
-              <div key={product._id} className="flex-none w-[85%] sm:w-auto snap-center h-full">
+              <div
+                key={product._id}
+                className="flex-none w-[85%] sm:w-auto snap-center h-full"
+              >
                 <ProductCard product={product} />
               </div>
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">{DESCRIPTIONS.PUBLIC.NO_PRODUCTS_CURRENTLY}</p>
+            <p className="text-muted-foreground">
+              {DESCRIPTIONS.PUBLIC.NO_PRODUCTS_CURRENTLY}
+            </p>
           </div>
         )}
       </div>
@@ -88,45 +107,64 @@ export default function Home() {
         DESCRIPTIONS.PUBLIC.BEST_SELECTION,
         featuredProducts || [],
         isFeaturedLoading,
-        "/products"
+        "/products",
       )}
 
       {/* Categories Preview */}
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-2">{TITLES.HOME.BROWSE_BY_CATEGORY}</h2>
-            <p className="text-muted-foreground">{TITLES.HOME.SELECT_FAVORITE_CATEGORY}</p>
+            <h2 className="text-3xl font-bold mb-2">
+              {TITLES.HOME.BROWSE_BY_CATEGORY}
+            </h2>
+            <p className="text-muted-foreground">
+              {TITLES.HOME.SELECT_FAVORITE_CATEGORY}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { slug: 'men-perfumes', name: 'عطور رجالية', image: 'https://res.cloudinary.com/drvgczmup/image/upload/v1769741914/men_Large_xyfc6d.png' },
-              { slug: 'women-perfumes', name: 'عطور نسائية', image: 'https://res.cloudinary.com/drvgczmup/image/upload/v1769741910/women_Large_e5g3i9.png' },
-              { slug: 'unisex-perfumes', name: 'عطور للجنسين', image: 'https://res.cloudinary.com/drvgczmup/image/upload/v1769741915/unisex_Large_jqxjog.png' }
+              {
+                slug: "men-perfumes",
+                name: "عطور رجالية",
+                image:
+                  "https://res.cloudinary.com/drvgczmup/image/upload/v1769741914/men_Large_xyfc6d.png",
+              },
+              {
+                slug: "women-perfumes",
+                name: "عطور نسائية",
+                image:
+                  "https://res.cloudinary.com/drvgczmup/image/upload/v1769741910/women_Large_e5g3i9.png",
+              },
+              {
+                slug: "unisex-perfumes",
+                name: "عطور للجنسين",
+                image:
+                  "https://res.cloudinary.com/drvgczmup/image/upload/v1769741915/unisex_Large_jqxjog.png",
+              },
             ].map((category) => {
-              const cat = categories?.find(c => c.slug === category.slug);
-              const href = cat ? `/products?category=${cat._id}` : '/products';
+              const cat = categories?.find((c) => c.slug === category.slug);
+              const href = cat ? `/products?category=${cat._id}` : "/products";
               return (
-              <Link
-                key={category.name}
-                href={href}
-                className="group relative aspect-[4/5] overflow-hidden rounded-xl border-0 shadow-lg hover:shadow-xl transition-all"
-              >
-                <Image
-                  src={category.image}
-                  alt={category.name}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
-                  <h3 className="text-white text-2xl font-bold mb-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    {category.name}
-                  </h3>
-                  <div className="h-1 w-12 bg-primary rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-                </div>
-              </Link>
-            );
+                <Link
+                  key={category.name}
+                  href={href}
+                  className="group relative aspect-[4/5] overflow-hidden rounded-xl border-0 shadow-lg hover:shadow-xl transition-all"
+                >
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
+                    <h3 className="text-white text-2xl font-bold mb-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                      {category.name}
+                    </h3>
+                    <div className="h-1 w-12 bg-primary rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                  </div>
+                </Link>
+              );
             })}
           </div>
         </div>
@@ -138,7 +176,7 @@ export default function Home() {
         DESCRIPTIONS.PUBLIC.MENS_COLLECTION,
         menProducts,
         isMenLoading,
-        menCategory ? `/products?category=${menCategory._id}` : '/products'
+        menCategory ? `/products?category=${menCategory._id}` : "/products",
       )}
 
       {/* Women's Perfumes */}
@@ -147,10 +185,8 @@ export default function Home() {
         DESCRIPTIONS.PUBLIC.WOMENS_COLLECTION,
         womenProducts,
         isWomenLoading,
-        womenCategory ? `/products?category=${womenCategory._id}` : '/products'
+        womenCategory ? `/products?category=${womenCategory._id}` : "/products",
       )}
     </div>
   );
 }
-
-

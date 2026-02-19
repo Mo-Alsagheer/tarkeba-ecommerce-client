@@ -48,13 +48,8 @@ export default function ProductsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(() =>
     categoryFromUrl ? [categoryFromUrl] : [],
   );
-  const [showFilters, setShowFilters] = useState(true);
-  const [expandedSections, setExpandedSections] = useState<string[]>([
-    "availability",
-    "price",
-    "category",
-    "size",
-  ]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [debouncedPriceRange, setDebouncedPriceRange] = useState([0, 5000]);
@@ -208,16 +203,16 @@ export default function ProductsPage() {
           {DESCRIPTIONS.PUBLIC.ALL_PRODUCTS}
         </p>
 
-        <div className="flex flex-col sm:flex-row justify-between items-center bg-background border rounded-lg p-4 shadow-sm">
-          <div className="flex items-center gap-4 w-full sm:w-auto">
+        <div className="flex justify-between items-center bg-background border rounded-lg p-2 sm:p-4 shadow-sm gap-2">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
-              className="font-semibold flex items-center gap-2 hover:bg-muted"
+              className="font-semibold flex items-center gap-1 sm:gap-2 hover:bg-muted px-2 h-9"
             >
               <SlidersHorizontal className="h-4 w-4" />
-              {LABELS.SECTIONS.SEARCH_FILTER}
+              <span className="text-sm">{LABELS.SECTIONS.SEARCH_FILTER}</span>
             </Button>
             <div className="h-4 w-px bg-border hidden sm:block"></div>
             <span className="text-sm text-muted-foreground hidden sm:inline-block">
@@ -226,8 +221,8 @@ export default function ProductsPage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto mt-4 sm:mt-0">
-            <span className="text-sm text-muted-foreground whitespace-nowrap">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <span className="text-sm text-muted-foreground whitespace-nowrap hidden xs:inline-block">
               {LABELS.COMMON.SORT}:
             </span>
             <Select
@@ -238,7 +233,7 @@ export default function ProductsPage() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-[180px] border-none shadow-none focus:ring-0 font-medium">
+              <SelectTrigger className="w-[120px] sm:w-[180px] border-none shadow-none focus:ring-0 font-medium h-9 px-1 sm:px-3 text-xs sm:text-sm">
                 <SelectValue placeholder={PLACEHOLDERS.SELECT.DEFAULT_SORT} />
               </SelectTrigger>
               <SelectContent>
@@ -521,7 +516,7 @@ export default function ProductsPage() {
         {/* Products Grid */}
         <div className={showFilters ? "md:col-span-3" : "md:col-span-4"}>
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {[...Array(9)].map((_, i) => (
                 <div
                   key={i}
@@ -531,7 +526,7 @@ export default function ProductsPage() {
             </div>
           ) : data && sortedProducts.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {sortedProducts
                   .filter((product) => {
                     // Filter by categories if selected
