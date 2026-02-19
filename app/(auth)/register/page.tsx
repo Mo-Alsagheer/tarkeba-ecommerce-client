@@ -56,9 +56,7 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormValues) => {
     try {
       setError(null);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { confirmPassword, username, ...rest } = data;
-      await register({ ...rest, name: username }).unwrap();
+      await register(data).unwrap();
       setSuccess(true);
       setTimeout(() => {
         router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
