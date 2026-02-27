@@ -49,10 +49,17 @@ export function ProductCard({ product }: ProductCardProps) {
 
     if (isOutOfStock) return;
 
+    const variantId = firstAvailableVariant
+      ? `${product._id}-${firstAvailableVariant.size}`
+      : product._id;
+    const variantName = firstAvailableVariant
+      ? `${product.name} - ${firstAvailableVariant.size}`
+      : product.name;
+
     dispatch(
       addToCart({
-        productId: product._id,
-        name: product.name,
+        productId: variantId,
+        name: variantName,
         price: displayPrice,
         quantity: 1,
         image: product.images[0] || "/placeholder.png",
